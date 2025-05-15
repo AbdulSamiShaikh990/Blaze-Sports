@@ -1,2 +1,1 @@
-# Blaze-Sports
-Complete E-Commerce website for sports
+Complete E-Commerce website
