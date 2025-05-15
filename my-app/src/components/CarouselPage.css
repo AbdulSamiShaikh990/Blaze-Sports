@@ -1,0 +1,55 @@
+.carousel-container {
+  width: 100%;
+  height: 90vh;
+  position: relative;
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.carousel {
+  height: 100%;
+}
+
+.carousel-item {
+  height: 100%;
+}
+
+.carousel-item img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+/* Make carousel indicators more visible */
+.carousel-indicators [data-bs-target] {
+  border-radius: 100%;
+  width: 10px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  margin: 0 6px;
+}
+
+.carousel-indicators .active {
+  background-color: #fff;
+  transform: scale(1.2);
+}
+
+/* Style carousel controls */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 5%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.carousel:hover .carousel-control-prev,
+.carousel:hover .carousel-control-next {
+  opacity: 0.8;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-size: 100% 100%;
+  width: 40px;
+  height: 40px;
+}
