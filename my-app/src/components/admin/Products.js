@@ -31,11 +31,11 @@ const Products = () => {
         ]);
         setProducts(productsRes.data);
         setCategories(categoriesRes.data);
-        setLoading(false);
       } catch (err) {
-        setError('Failed to fetch data. Please check your connection and try again.');
+        setError('Failed to fetch data. Please try again.');
+        console.error('Fetch error:', err);
+      } finally {
         setLoading(false);
-        console.error('Error fetching data:', err);
       }
     };
 
@@ -43,11 +43,6 @@ const Products = () => {
   }, []);
 
   const handleAddProduct = () => {
-<<<<<<< Updated upstream
-=======
-    console.log('handleAddProduct called');
-    setError(null); // Clear previous errors
->>>>>>> Stashed changes
     setIsAdding(true);
     setIsEditing(false);
     setSelectedProduct(null);
@@ -63,9 +58,9 @@ const Products = () => {
   };
 
   const handleEditProduct = (product) => {
-    setSelectedProduct(product);
     setIsEditing(true);
     setIsAdding(false);
+    setSelectedProduct(product);
     setImageFile(null);
     setFeatured(product.featured || false);
     setFormData({
@@ -77,14 +72,14 @@ const Products = () => {
     });
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await api.delete(`/products/${productId}`);
-        setProducts(products.filter(product => product._id !== productId));
+        await api.delete(`/products/${id}`);
+        setProducts(products.filter(product => product._id !== id));
       } catch (err) {
-        setError('Failed to delete product. Please try again.');
-        console.error('Error deleting product:', err);
+        setError('Failed to delete product.');
+        console.error(err);
       }
     }
   };
@@ -98,7 +93,7 @@ const Products = () => {
   };
 
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       setImageFile(e.target.files[0]);
     }
   };
@@ -108,41 +103,39 @@ const Products = () => {
     setSubmitting(true);
     setError(null);
 
-    if (!formData.name || !formData.categoryId || !formData.price || !formData.stock) {
-      setError('Please fill in all required fields');
+    const { name, categoryId, price, stock } = formData;
+    if (!name || !categoryId || !price || !stock) {
+      setError('Please fill in all required fields.');
       setSubmitting(false);
       return;
     }
 
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('category', formData.categoryId);
-    formDataToSend.append('price', parseFloat(formData.price));
-    formDataToSend.append('stock', parseInt(formData.stock));
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('featured', featured);
-    
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('category', formData.categoryId);
+    data.append('price', parseFloat(formData.price));
+    data.append('stock', parseInt(formData.stock));
+    data.append('description', formData.description);
+    data.append('featured', featured);
     if (imageFile) {
-      formDataToSend.append('image', imageFile);
+      data.append('image', imageFile);
     }
 
     try {
       let response;
       if (isAdding) {
-        response = await api.post('/products', formDataToSend);
+        response = await api.post('/products', data);
         setProducts([...products, response.data]);
-      } else {
-        response = await api.put(`/products/${selectedProduct._id}`, formDataToSend);
-        setProducts(products.map(product => 
-          product._id === selectedProduct._id ? response.data : product
+      } else if (isEditing && selectedProduct) {
+        response = await api.put(`/products/${selectedProduct._id}`, data);
+        setProducts(products.map(p =>
+          p._id === selectedProduct._id ? response.data : p
         ));
       }
-      setIsAdding(false);
-      setIsEditing(false);
-      setImageFile(null);
+      handleCancel();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save product. Please try again.');
-      console.error('Error saving product:', err);
+      setError(err.response?.data?.message || 'Failed to save product.');
+      console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -162,9 +155,7 @@ const Products = () => {
     <div className="products-admin">
       <div className="header">
         <h1>Products Management</h1>
-        <button onClick={handleAddProduct} className="add-btn">
-          + Add New Product
-        </button>
+        <button className="add-btn" onClick={handleAddProduct}>+ Add New Product</button>
       </div>
 
       {error && <div className="error">{error}</div>}
@@ -190,24 +181,16 @@ const Products = () => {
                   <td>{product.name}</td>
                   <td>{product.category?.name || 'Uncategorized'}</td>
                   <td>${product.price.toFixed(2)}</td>
-                  <td className={product.stock < 10 ? 'low-stock' : ''}>
-                    {product.stock}
-                  </td>
+                  <td className={product.stock < 10 ? 'low-stock' : ''}>{product.stock}</td>
                   <td>{product.featured ? '⭐' : '-'}</td>
-                  <td className="actions">
-                    <button onClick={() => handleEditProduct(product)} className="edit">
-                      Edit
-                    </button>
-                    <button onClick={() => handleDeleteProduct(product._id)} className="delete">
-                      Delete
-                    </button>
+                  <td>
+                    <button onClick={() => handleEditProduct(product)} className="edit">Edit</button>
+                    <button onClick={() => handleDeleteProduct(product._id)} className="delete">Delete</button>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="7" className="empty">No products found</td>
-              </tr>
+              <tr><td colSpan="7" className="empty">No products found</td></tr>
             )}
           </tbody>
         </table>
@@ -217,10 +200,8 @@ const Products = () => {
         <div className="form-modal">
           <div className="form-container">
             <h2>{isAdding ? 'Add New Product' : 'Edit Product'}</h2>
-            
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-<<<<<<< Updated upstream
                 <label>Product Name *</label>
                 <input
                   type="text"
@@ -228,40 +209,16 @@ const Products = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="form-input"
                 />
-=======
-                <label>Product Name:</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={name}
-                    onChange={(e) => {
-                      console.log('Name input changed:', e.target.value);
-                      setName(e.target.value);
-                    }}
-                    required
-                  />
->>>>>>> Stashed changes
               </div>
 
               <div className="form-group">
                 <label>Category *</label>
                 <select
-<<<<<<< Updated upstream
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleInputChange}
-=======
-                  name="category"
-                  value={categoryId}
-                  onChange={(e) => {
-                    console.log('Category input changed:', e.target.value);
-                    setCategoryId(e.target.value);
-                  }}
->>>>>>> Stashed changes
                   required
-                  className="form-input"
                 >
                   <option value="">Select Category</option>
                   {categories.map(category => (
@@ -271,7 +228,6 @@ const Products = () => {
                   ))}
                 </select>
               </div>
-<<<<<<< Updated upstream
 
               <div className="form-row">
                 <div className="form-group">
@@ -284,7 +240,6 @@ const Products = () => {
                     min="0"
                     step="0.01"
                     required
-                    className="form-input"
                   />
                 </div>
 
@@ -297,70 +252,23 @@ const Products = () => {
                     onChange={handleInputChange}
                     min="0"
                     required
-                    className="form-input"
                   />
                 </div>
-=======
-              <div className="form-group">
-                <label>Price:</label>
-                <input
-                  type="number"
-                  name="price"
-                  step="0.01"
-                  value={price}
-                  onChange={(e) => {
-                    console.log('Price input changed:', e.target.value);
-                    setPrice(e.target.value);
-                  }}
-                  required
-                />
->>>>>>> Stashed changes
               </div>
 
               <div className="form-group">
-<<<<<<< Updated upstream
                 <label>Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows="4"
-                  className="form-input"
-=======
-                <label>Stock:</label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={stock}
-                  onChange={(e) => {
-                    console.log('Stock input changed:', e.target.value);
-                    setStock(e.target.value);
-                  }}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Description:</label>
-                <textarea
-                  name="description"
-                  value={description}
-                  onChange={(e) => {
-                    console.log('Description input changed:', e.target.value);
-                    setDescription(e.target.value);
-                  }}
-                  required
->>>>>>> Stashed changes
+                  rows="3"
                 />
               </div>
 
               <div className="form-group">
                 <label>Product Image</label>
-                <input 
-                  type="file" 
-                  onChange={handleImageChange} 
-                  accept="image/*"
-                  className="file-input"
-                />
+                <input type="file" onChange={handleImageChange} accept="image/*" />
               </div>
 
               <div className="form-group checkbox">
@@ -374,32 +282,10 @@ const Products = () => {
               </div>
 
               <div className="form-actions">
-<<<<<<< Updated upstream
-                <button 
-                  type="submit" 
-                  className="submit-btn"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Processing...' : (isAdding ? 'Add Product' : 'Save Changes')}
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Processing...' : isAdding ? 'Add Product' : 'Save Changes'}
                 </button>
-                <button 
-                  type="button" 
-                  onClick={handleCancel}
-                  className="cancel-btn"
-                >
-                  Cancel
-                </button>
-=======
-                {error && <div className="error-message">{error}</div>}
-                <button type="submit">{isAdding ? 'Add Product' : 'Save Changes'}</button>
-                <button type="button" onClick={() => {
-                  setError(null);
-                  setIsEditing(false);
-                  setIsAdding(false);
-                  setImageFile(null);
-                  setFeatured(false);
-                }}>Cancel</button>
->>>>>>> Stashed changes
+                <button type="button" onClick={handleCancel}>Cancel</button>
               </div>
             </form>
           </div>
