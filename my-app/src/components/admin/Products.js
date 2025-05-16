@@ -43,6 +43,11 @@ const Products = () => {
   }, []);
 
   const handleAddProduct = () => {
+<<<<<<< Updated upstream
+=======
+    console.log('handleAddProduct called');
+    setError(null); // Clear previous errors
+>>>>>>> Stashed changes
     setIsAdding(true);
     setIsEditing(false);
     setSelectedProduct(null);
@@ -215,6 +220,7 @@ const Products = () => {
             
             <form onSubmit={handleSubmit}>
               <div className="form-group">
+<<<<<<< Updated upstream
                 <label>Product Name *</label>
                 <input
                   type="text"
@@ -224,14 +230,36 @@ const Products = () => {
                   required
                   className="form-input"
                 />
+=======
+                <label>Product Name:</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={(e) => {
+                      console.log('Name input changed:', e.target.value);
+                      setName(e.target.value);
+                    }}
+                    required
+                  />
+>>>>>>> Stashed changes
               </div>
 
               <div className="form-group">
                 <label>Category *</label>
                 <select
+<<<<<<< Updated upstream
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleInputChange}
+=======
+                  name="category"
+                  value={categoryId}
+                  onChange={(e) => {
+                    console.log('Category input changed:', e.target.value);
+                    setCategoryId(e.target.value);
+                  }}
+>>>>>>> Stashed changes
                   required
                   className="form-input"
                 >
@@ -243,6 +271,7 @@ const Products = () => {
                   ))}
                 </select>
               </div>
+<<<<<<< Updated upstream
 
               <div className="form-row">
                 <div className="form-group">
@@ -271,9 +300,25 @@ const Products = () => {
                     className="form-input"
                   />
                 </div>
+=======
+              <div className="form-group">
+                <label>Price:</label>
+                <input
+                  type="number"
+                  name="price"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => {
+                    console.log('Price input changed:', e.target.value);
+                    setPrice(e.target.value);
+                  }}
+                  required
+                />
+>>>>>>> Stashed changes
               </div>
 
               <div className="form-group">
+<<<<<<< Updated upstream
                 <label>Description</label>
                 <textarea
                   name="description"
@@ -281,6 +326,30 @@ const Products = () => {
                   onChange={handleInputChange}
                   rows="4"
                   className="form-input"
+=======
+                <label>Stock:</label>
+                <input
+                  type="number"
+                  name="stock"
+                  value={stock}
+                  onChange={(e) => {
+                    console.log('Stock input changed:', e.target.value);
+                    setStock(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description:</label>
+                <textarea
+                  name="description"
+                  value={description}
+                  onChange={(e) => {
+                    console.log('Description input changed:', e.target.value);
+                    setDescription(e.target.value);
+                  }}
+                  required
+>>>>>>> Stashed changes
                 />
               </div>
 
@@ -305,6 +374,7 @@ const Products = () => {
               </div>
 
               <div className="form-actions">
+<<<<<<< Updated upstream
                 <button 
                   type="submit" 
                   className="submit-btn"
@@ -319,6 +389,17 @@ const Products = () => {
                 >
                   Cancel
                 </button>
+=======
+                {error && <div className="error-message">{error}</div>}
+                <button type="submit">{isAdding ? 'Add Product' : 'Save Changes'}</button>
+                <button type="button" onClick={() => {
+                  setError(null);
+                  setIsEditing(false);
+                  setIsAdding(false);
+                  setImageFile(null);
+                  setFeatured(false);
+                }}>Cancel</button>
+>>>>>>> Stashed changes
               </div>
             </form>
           </div>
