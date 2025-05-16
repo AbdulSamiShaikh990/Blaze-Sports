@@ -12,21 +12,21 @@ function CarouselPage() {
     <div className="carousel-container">
       <Carousel>
         <Carousel.Item>
-          <img style={{height:'90vh'}}
+          <img style={{height:'65vh'}}
             className="d-block w-100"
             src={img1}
             alt="First slide"
           />
         </Carousel.Item>
         <Carousel.Item>
-          <img style={{height:'90vh'}}
+          <img style={{height:'65vh'}}
             className="d-block w-100"
             src={img2}
             alt="Second slide"
           />
         </Carousel.Item>
         <Carousel.Item>
-          <img style={{height:'90vh'}}
+          <img style={{height:'65vh'}}
             className="d-block w-100"
             src={img3}
             alt="Third slide"

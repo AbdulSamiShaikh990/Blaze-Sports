@@ -12,13 +12,15 @@ const Products = () => {
   const [error, setError] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [featured, setFeatured] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // New state variables for controlled form inputs
-  const [name, setName] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
-  const [description, setDescription] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    categoryId: '',
+    price: '',
+    stock: '',
+    description: ''
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,42 +43,53 @@ const Products = () => {
   }, []);
 
   const handleAddProduct = () => {
-    console.log('handleAddProduct called');
     setIsAdding(true);
+    setIsEditing(false);
     setSelectedProduct(null);
     setImageFile(null);
     setFeatured(false);
-    // Reset form fields
-    setName('');
-    setCategoryId('');
-    setPrice('');
-    setStock('');
-    setDescription('');
+    setFormData({
+      name: '',
+      categoryId: '',
+      price: '',
+      stock: '',
+      description: ''
+    });
   };
 
   const handleEditProduct = (product) => {
-    console.log('handleEditProduct called with product:', product);
     setSelectedProduct(product);
     setIsEditing(true);
     setIsAdding(false);
     setImageFile(null);
     setFeatured(product.featured || false);
-    // Set form fields with selected product data
-    setName(product.name || '');
-    setCategoryId(product.category?._id || '');
-    setPrice(product.price || '');
-    setStock(product.stock || '');
-    setDescription(product.description || '');
+    setFormData({
+      name: product.name || '',
+      categoryId: product.category?._id || '',
+      price: product.price || '',
+      stock: product.stock || '',
+      description: product.description || ''
+    });
   };
 
   const handleDeleteProduct = async (productId) => {
-    try {
-      await api.delete(`/products/${productId}`);
-      setProducts(products.filter(product => product._id !== productId));
-    } catch (err) {
-      setError('Failed to delete product. Please try again.');
-      console.error('Error deleting product:', err);
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await api.delete(`/products/${productId}`);
+        setProducts(products.filter(product => product._id !== productId));
+      } catch (err) {
+        setError('Failed to delete product. Please try again.');
+        console.error('Error deleting product:', err);
+      }
     }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -85,182 +98,232 @@ const Products = () => {
     }
   };
 
-  const handleFeaturedChange = (e) => {
-    setFeatured(e.target.checked);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('category', categoryId);
-    formData.append('price', parseFloat(price));
-    formData.append('stock', parseInt(stock));
-    formData.append('description', description);
-    formData.append('featured', featured);
+    setSubmitting(true);
+    setError(null);
+
+    if (!formData.name || !formData.categoryId || !formData.price || !formData.stock) {
+      setError('Please fill in all required fields');
+      setSubmitting(false);
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('category', formData.categoryId);
+    formDataToSend.append('price', parseFloat(formData.price));
+    formDataToSend.append('stock', parseInt(formData.stock));
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('featured', featured);
+    
     if (imageFile) {
-      formData.append('image', imageFile);
+      formDataToSend.append('image', imageFile);
     }
 
     try {
+      let response;
       if (isAdding) {
-        const response = await api.post('/products', formData);
+        response = await api.post('/products', formDataToSend);
         setProducts([...products, response.data]);
       } else {
-        const response = await api.put(`/products/${selectedProduct._id}`, formData);
+        response = await api.put(`/products/${selectedProduct._id}`, formDataToSend);
         setProducts(products.map(product => 
-          product._id === selectedProduct._id ? { ...product, ...response.data } : product
+          product._id === selectedProduct._id ? response.data : product
         ));
       }
-      setIsEditing(false);
       setIsAdding(false);
+      setIsEditing(false);
       setImageFile(null);
-      setFeatured(false);
-      // Reset form fields
-      setName('');
-      setCategoryId('');
-      setPrice('');
-      setStock('');
-      setDescription('');
     } catch (err) {
-      setError('Failed to save product. Please try again.');
+      setError(err.response?.data?.message || 'Failed to save product. Please try again.');
       console.error('Error saving product:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) return <div className="admin-content">Loading products...</div>;
-  if (error) return <div className="admin-content error-message">{error}</div>;
+  const handleCancel = () => {
+    setIsAdding(false);
+    setIsEditing(false);
+    setImageFile(null);
+    setFeatured(false);
+    setError(null);
+  };
+
+  if (loading) return <div className="loading">Loading products...</div>;
 
   return (
-    <div className="admin-content">
-      <div className="products-header">
+    <div className="products-admin">
+      <div className="header">
         <h1>Products Management</h1>
-        <button onClick={handleAddProduct} className="add-product-btn">Add New Product</button>
+        <button onClick={handleAddProduct} className="add-btn">
+          + Add New Product
+        </button>
       </div>
 
-      <div className="products-container">
-        <div className="products-table">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Featured</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
+      {error && <div className="error">{error}</div>}
+
+      <div className="products-list">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Featured</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.length > 0 ? (
+              products.map(product => (
                 <tr key={product._id}>
-                  <td>{product._id}</td>
+                  <td>{product._id.substring(0, 6)}...</td>
                   <td>{product.name}</td>
-                  <td>{product.category.name || product.category}</td>
+                  <td>{product.category?.name || 'Uncategorized'}</td>
                   <td>${product.price.toFixed(2)}</td>
-                  <td>{product.stock}</td>
-                  <td>{product.featured ? 'Yes' : 'No'}</td>
-                  <td>
-                    <button onClick={() => handleEditProduct(product)}>Edit</button>
-                    <button onClick={() => handleDeleteProduct(product._id)}>Delete</button>
+                  <td className={product.stock < 10 ? 'low-stock' : ''}>
+                    {product.stock}
+                  </td>
+                  <td>{product.featured ? '⭐' : '-'}</td>
+                  <td className="actions">
+                    <button onClick={() => handleEditProduct(product)} className="edit">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDeleteProduct(product._id)} className="delete">
+                      Delete
+                    </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="empty">No products found</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {(isEditing || isAdding) && (
-          <div
-            key={isAdding ? 'new' : selectedProduct?._id || 'edit'}
-            className="product-form"
-          >
+      {(isAdding || isEditing) && (
+        <div className="form-modal">
+          <div className="form-container">
             <h2>{isAdding ? 'Add New Product' : 'Edit Product'}</h2>
+            
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Product Name:</label>
+                <label>Product Name *</label>
                 <input
                   type="text"
                   name="name"
-                  value={name}
-                  onChange={(e) => {
-                    console.log('Name input changed:', e.target.value);
-                    setName(e.target.value);
-                  }}
+                  value={formData.name}
+                  onChange={handleInputChange}
                   required
+                  className="form-input"
                 />
               </div>
+
               <div className="form-group">
-                <label>Category:</label>
+                <label>Category *</label>
                 <select
-                  name="category"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleInputChange}
                   required
+                  className="form-input"
                 >
                   <option value="">Select Category</option>
                   {categories.map(category => (
-                    <option key={category._id} value={category._id}>{category.name}</option>
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Price:</label>
-                <input
-                  type="number"
-                  name="price"
-                  step="0.01"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
-                />
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Price *</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    required
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Stock *</label>
+                  <input
+                    type="number"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleInputChange}
+                    min="0"
+                    required
+                    className="form-input"
+                  />
+                </div>
               </div>
+
               <div className="form-group">
-                <label>Stock:</label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Description:</label>
+                <label>Description</label>
                 <textarea
                   name="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="4"
+                  className="form-input"
                 />
               </div>
+
               <div className="form-group">
-                <label>Image:</label>
-                <input type="file" name="image" accept="image/*" onChange={handleImageChange} />
-                {selectedProduct?.image && !imageFile && (
-                  <img src={selectedProduct.image} alt="Product" style={{ width: '100px', marginTop: '10px' }} />
-                )}
+                <label>Product Image</label>
+                <input 
+                  type="file" 
+                  onChange={handleImageChange} 
+                  accept="image/*"
+                  className="file-input"
+                />
               </div>
-              <div className="form-group">
-                <label>
-                  <input type="checkbox" checked={featured} onChange={handleFeaturedChange} />
-                  Featured
-                </label>
+
+              <div className="form-group checkbox">
+                <input
+                  type="checkbox"
+                  id="featured"
+                  checked={featured}
+                  onChange={(e) => setFeatured(e.target.checked)}
+                />
+                <label htmlFor="featured">Featured Product</label>
               </div>
+
               <div className="form-actions">
-                <button type="submit">{isAdding ? 'Add Product' : 'Save Changes'}</button>
-                <button type="button" onClick={() => {
-                  setIsEditing(false);
-                  setIsAdding(false);
-                  setImageFile(null);
-                  setFeatured(false);
-                }}>Cancel</button>
+                <button 
+                  type="submit" 
+                  className="submit-btn"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Processing...' : (isAdding ? 'Add Product' : 'Save Changes')}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleCancel}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -19,7 +19,7 @@ const WhatsAppButton = () => {
   };
 
   return (
-    <div className="floating-buttons" style={{ position: 'fixed', zIndex: 9999 }}>
+    <div className="floating-buttons" style={{ position: 'fixed', zIndex: 9999, bottom: '20px', right: '20px' }}>
       <button 
         className="floating-button ai-button"
         onClick={handleAIClick}

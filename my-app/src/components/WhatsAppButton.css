@@ -97,13 +97,20 @@
   gap: 15px;
   z-index: 9999;
   pointer-events: auto;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100vh;
+  padding-bottom: 20px;
+  background-color: rgba(255, 0, 0, 0.3); /* Debug: semi-transparent red background */
+  border: 2px solid red; /* Debug: red border */
 }
 
 .floating-button {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: none;
+  border: 2px solid yellow; /* Debug: yellow border */
+  background-color: rgba(255, 255, 0, 0.3); /* Debug: semi-transparent yellow background */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,6 +162,8 @@
 .whatsapp-button {
   background: linear-gradient(135deg, #25D366, #128C7E);
   color: white;
+  border: 2px solid lime; /* Debug: lime border */
+  background-color: rgba(0, 255, 0, 0.3); /* Debug: semi-transparent green background */
 }
 
 .ai-button {

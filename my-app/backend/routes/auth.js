@@ -72,9 +72,17 @@ router.post('/signup', async (req, res) => {
         createdAt: savedUser.createdAt
       };
 
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: savedUser._id, email: savedUser.email, userType: savedUser.userType },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
       res.status(201).json({
         message: 'User created successfully',
-        user: userResponse
+        user: userResponse,
+        token
       });
     } catch (saveError) {
       console.error('Error saving user:', saveError);
@@ -101,7 +109,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Login route
+// Login route with JWT token generation
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -123,9 +131,17 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Return user data (excluding password)
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user._id, email: user.email, userType: user.userType },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Return user data + token
     res.json({
       message: 'Login successful',
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -140,4 +156,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

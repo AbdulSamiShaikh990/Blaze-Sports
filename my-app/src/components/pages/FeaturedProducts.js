@@ -16,7 +16,7 @@ const FeaturedProducts = () => {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await api.get('/products/featured');
+        const response = await api.get('/products'); // Changed from '/products/featured' to '/products'
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching featured products:', error);
