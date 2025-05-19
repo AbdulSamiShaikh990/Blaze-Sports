@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import CarouselPage from "../CarouselPage"; // ✅ Hero Section (Carousel)
-import FeaturedProducts from "../FeaturedProducts";
-import AboutUs from "./AboutUs";
-import Contact from "./Contact";
 import Sidebar from "../Sidebar";
+import FeaturedProducts from "./FeaturedProducts";
 
 const Home = () => {
   const location = useLocation();
@@ -29,16 +27,9 @@ const Home = () => {
         <div id="products">
           <FeaturedProducts />
         </div>
-        <div id="about">
-          <AboutUs />
-        </div>
-        <div id="contact">
-          <Contact />
-        </div>
       </div>
     </div>
   );
 };
 
 export default Home;
-

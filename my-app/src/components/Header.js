@@ -13,31 +13,19 @@ const Header = () => {
   const { cartItems } = useCart();
 
   const handleNavigation = (sectionId) => {
-    if (location.pathname === '/') {
-      // If already on home page
-      if (!sectionId) {
-        // For home button or logo click, scroll to carousel
-        const carousel = document.querySelector('.carousel-container');
-        if (carousel) {
-          carousel.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          // Fallback to top if carousel not found
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      } else {
-        // For other sections
-        const section = document.getElementById(sectionId);
-        if (section) {
-          section.scrollIntoView({ behavior: "smooth" });
-        }
-      }
-    } else {
-      // If on another page, navigate to home
-      navigate('/', { 
-        state: { 
-          scrollTo: sectionId || 'top' 
-        }
-      });
+    switch (sectionId) {
+      case 'products':
+        navigate('/products');
+        break;
+      case 'about':
+        navigate('/about');
+        break;
+      case 'contact':
+        navigate('/contact');
+        break;
+      default:
+        navigate('/');
+        break;
     }
   };
 

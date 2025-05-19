@@ -1,32 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../config/api';
 import { useFilters } from '../Sidebar';
-import { useShopContext } from '../../context/ShopContext';
+import { useShop } from '../../context/ShopContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './FeaturedProducts.css';
+import '../FeaturedProducts.css';
+import ProductDetailsModal from './ProductDetailsModal';
+
+const sampleProducts = [
+  {
+    _id: '1',
+    name: 'Basketball',
+    image: '/products/basketball.jpg',
+    price: 2500,
+    rating: 4.5,
+    category: { name: 'Sports' },
+    description: 'High quality basketball for indoor and outdoor use.'
+  },
+  {
+    _id: '2',
+    name: 'Tennis Racket',
+    image: '/products/tennisracket.jpg',
+    price: 4500,
+    rating: 4.0,
+    category: { name: 'Sports' },
+    description: 'Lightweight tennis racket with excellent grip.'
+  },
+  {
+    _id: '3',
+    name: 'Football',
+    image: '/products/football.jpeg',
+    price: 3000,
+    rating: 4.7,
+    category: { name: 'Sports' },
+    description: 'Durable football suitable for all weather conditions.'
+  }
+];
 
 const FeaturedProducts = () => {
-  const { addToCart } = useShopContext();
+  const { addToCart } = useShop();
   const { activeCategory, priceRange, ratings, filtersApplied } = useFilters();
   const [searchQuery, setSearchQuery] = useState('');
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [products, setProducts] = useState(sampleProducts);
+  const [filteredProducts, setFilteredProducts] = useState(sampleProducts);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchFeaturedProducts = async () => {
-      try {
-        const response = await api.get('/products'); // Changed from '/products/featured' to '/products'
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching featured products:', error);
-      }
-    };
-
-    fetchFeaturedProducts();
-  }, []);
-
-  // Apply filters
   useEffect(() => {
     let results = [...products];
 
@@ -68,6 +86,16 @@ const FeaturedProducts = () => {
     return `PKR ${price.toLocaleString()}`;
   };
 
+  const openModal = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedProduct(null);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="featured-products">
       <div className="featured-products-header">
@@ -85,7 +113,7 @@ const FeaturedProducts = () => {
       <div className="products-grid">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <div key={product._id} className="product-card">
+            <div key={product._id} className="product-card" onClick={() => openModal(product)} style={{ cursor: 'pointer' }}>
               <img src={product.image} alt={product.name} />
               <h3>{product.name}</h3>
               <div className="product-info">
@@ -98,7 +126,10 @@ const FeaturedProducts = () => {
               </div>
               <button
                 className="add-to-cart-btn"
-                onClick={() => handleAddToCart(product)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart(product);
+                }}
               >
                 Add to Cart
               </button>
@@ -110,6 +141,7 @@ const FeaturedProducts = () => {
           </div>
         )}
       </div>
+      {isModalOpen && <ProductDetailsModal product={selectedProduct} onClose={closeModal} />}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

@@ -10,9 +10,13 @@ import Cart from "./components/pages/Cart";
 import AIRecommendation from "./components/pages/AIRecommendation";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import Users from "./components/admin/Users";
-import Products from "./components/admin/Products";
+import AdminProducts from "./components/admin/Products";
 import Categories from "./components/admin/Categories";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+import Products from "./components/pages/Products";
+import AboutUs from "./components/pages/AboutUs";
+import Contact from "./components/pages/Contact";
 
 import { ThemeProvider } from "./context/ThemeContext";
 import { ShopProvider } from "./context/ShopContext";
@@ -56,13 +60,16 @@ function App() {
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   
                   {/* Protected Customer Routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/cart" element={
+                <Route path="/" element={<Home />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/cart" element={
                     <ProtectedRoute allowedRoles={['customer']}>
                       <Cart />
                     </ProtectedRoute>
                   } />
-                  <Route path="/ai-recommendation" element={
+                <Route path="/ai-recommendation" element={
                     <ProtectedRoute allowedRoles={['customer']}>
                       <AIRecommendation />
                     </ProtectedRoute>
@@ -81,7 +88,7 @@ function App() {
                   } />
                   <Route path="/admin/products" element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <Products />
+                      <AdminProducts />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/categories" element={
@@ -105,7 +112,8 @@ function App() {
 function ConditionalHeader() {
   const location = useLocation();
   const hiddenPages = ["/cart", "/login", "/signup", "/forgot-password", "/new-login", "/ai-recommendation"];
-  if (hiddenPages.includes(location.pathname)) {
+  // Hide header on all admin routes
+  if (hiddenPages.includes(location.pathname) || location.pathname.startsWith("/admin")) {
     return null;
   }
   return <Header />;

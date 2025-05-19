@@ -42,18 +42,15 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <div className="admin-sidebar">
-        <h2>Admin Panel</h2>
-        <nav>
-          <ul>
-            <li><Link to="/admin/dashboard">Dashboard</Link></li>
-            <li><Link to="/admin/users">Users</Link></li>
-            <li><Link to="/admin/products">Products</Link></li>
-            <li><Link to="/admin/categories">Categories</Link></li>
-          </ul>
-        </nav>
+      <div className="admin-header">
+        <button className="back-button" onClick={() => window.history.back()}>
+          &larr; Back
+        </button>
+        <button className="move-website-button" onClick={() => window.location.href = '/'}>
+          Move to Website
+        </button>
       </div>
-      <div className="admin-content">
+      <div className="admin-content no-sidebar">
         <h1>Admin Dashboard</h1>
         <div className="dashboard-stats">
           <div className="stat-card">
