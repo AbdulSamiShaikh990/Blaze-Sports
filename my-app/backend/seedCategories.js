@@ -7,7 +7,6 @@ const categories = [
   { name: 'Football', description: 'Football related products' },
   { name: 'Tennis', description: 'Tennis related products' }
 ];
-
 async function seedCategories() {
   try {
     const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/project';
@@ -31,5 +30,4 @@ async function seedCategories() {
     console.error('Error seeding categories:', error);
   }
 }
-
 seedCategories();
