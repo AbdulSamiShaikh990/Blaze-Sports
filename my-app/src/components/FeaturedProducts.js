@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FaShoppingCart, FaStar, FaHeart, FaSearch, FaFilter, FaCheck } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaShoppingCart, FaStar, FaHeart, FaSearch, FaFilter, FaCheck, FaEye } from 'react-icons/fa';
 import { useShop } from '../context/ShopContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,7 +17,9 @@ const sampleProducts = [
     description: "Premium English willow cricket bat for professional players",
     stock: 15,
     discount: 10,
-    features: ["Premium English Willow", "Pro Handle Grip", "Lightweight Design"]
+    features: ["Premium English Willow", "Pro Handle Grip", "Lightweight Design"],
+    isNew: true,
+    isBestSeller: true
   },
   {
     id: 2,
@@ -30,7 +32,9 @@ const sampleProducts = [
     description: "Comfortable and stylish football jersey with shorts",
     stock: 25,
     discount: 5,
-    features: ["Breathable Fabric", "Team Logo", "Custom Name Option"]
+    features: ["Breathable Fabric", "Team Logo", "Custom Name Option"],
+    isNew: true,
+    isBestSeller: false
   },
   {
     id: 3,
@@ -43,7 +47,9 @@ const sampleProducts = [
     description: "Professional tennis racket with advanced technology",
     stock: 8,
     discount: 15,
-    features: ["Carbon Fiber Frame", "Pro Grip", "Shock Absorption"]
+    features: ["Carbon Fiber Frame", "Pro Grip", "Shock Absorption"],
+    isNew: false,
+    isBestSeller: true
   },
   {
     id: 4,
@@ -56,7 +62,9 @@ const sampleProducts = [
     description: "High-performance basketball shoes with superior grip",
     stock: 12,
     discount: 20,
-    features: ["Anti-Slip Sole", "Ankle Support", "Breathable Mesh"]
+    features: ["Anti-Slip Sole", "Ankle Support", "Breathable Mesh"],
+    isNew: true,
+    isBestSeller: true
   },
   {
     id: 5,
@@ -69,7 +77,9 @@ const sampleProducts = [
     description: "Complete badminton set with rackets and shuttlecocks",
     stock: 30,
     discount: 0,
-    features: ["2 Rackets", "3 Shuttlecocks", "Carrying Case"]
+    features: ["2 Rackets", "3 Shuttlecocks", "Carrying Case"],
+    isNew: false,
+    isBestSeller: false
   },
   {
     id: 6,
@@ -82,7 +92,9 @@ const sampleProducts = [
     description: "Anti-fog swimming goggles with UV protection",
     stock: 20,
     discount: 8,
-    features: ["UV Protection", "Anti-Fog", "Adjustable Strap"]
+    features: ["UV Protection", "Anti-Fog", "Adjustable Strap"],
+    isNew: true,
+    isBestSeller: false
   }
 ];
 
@@ -90,33 +102,48 @@ const FeaturedProducts = () => {
   const [hoveredProduct, setHoveredProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('featured');
+  const [showQuickView, setShowQuickView] = useState(null);
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, cart } = useShop();
   const [addedToCart, setAddedToCart] = useState({});
 
   const categories = ['all', ...new Set(sampleProducts.map(product => product.category.toLowerCase()))];
 
-  const filteredProducts = sampleProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts = sampleProducts
+    .filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'newest':
+          return b.isNew - a.isNew;
+        default:
+          return b.isBestSeller - a.isBestSeller;
+      }
+    });
 
   const handleAddToCart = (product) => {
     addToCart(product);
     setAddedToCart({ ...addedToCart, [product.id]: true });
     
-    // Show success notification
     toast.success('Added to cart!', {
       position: "top-right",
-      autoClose: 200,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
     });
 
-    // Reset the added state after animation
     setTimeout(() => {
       setAddedToCart({ ...addedToCart, [product.id]: false });
     }, 200);
@@ -127,19 +154,109 @@ const FeaturedProducts = () => {
       removeFromWishlist(product.id);
       toast.info('Removed from wishlist', {
         position: "top-right",
-        autoClose: 200,
+        autoClose: 2000,
       });
     } else {
       addToWishlist(product);
       toast.success('Added to wishlist!', {
         position: "top-right",
-        autoClose: 200,
+        autoClose: 2000,
       });
     }
   };
 
   const calculateDiscountedPrice = (price, discount) => {
     return price - (price * discount / 100);
+  };
+
+  const QuickViewModal = ({ product, onClose }) => {
+    if (!product) return null;
+
+    return (
+      <div className="quick-view-modal" onClick={onClose}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <button className="close-button" onClick={onClose}>×</button>
+          <div className="modal-body">
+            <div className="modal-image">
+              <img src={product.image} alt={product.name} />
+              {product.discount > 0 && (
+                <div className="discount-badge">
+                  {product.discount}% OFF
+                </div>
+              )}
+            </div>
+            <div className="modal-info">
+              <span className="product-category">{product.category}</span>
+              <h2>{product.name}</h2>
+              <p className="product-description">{product.description}</p>
+              
+              <div className="product-features">
+                {product.features.map((feature, index) => (
+                  <span key={index} className="feature-tag">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+
+              <div className="product-rating">
+                <div className="stars">
+                  {[...Array(5)].map((_, index) => (
+                    <FaStar 
+                      key={index} 
+                      className={index < Math.floor(product.rating) ? 'filled' : ''}
+                    />
+                  ))}
+                </div>
+                <span className="reviews">({product.reviews} reviews)</span>
+              </div>
+
+              <div className="product-price">
+                {product.discount > 0 ? (
+                  <>
+                    <span className="original-price">₹{product.price.toLocaleString()}</span>
+                    <span className="price">₹{calculateDiscountedPrice(product.price, product.discount).toLocaleString()}</span>
+                  </>
+                ) : (
+                  <span className="price">₹{product.price.toLocaleString()}</span>
+                )}
+              </div>
+
+              <div className="stock-info">
+                {product.stock > 0 ? (
+                  <span className="in-stock">In Stock ({product.stock})</span>
+                ) : (
+                  <span className="out-of-stock">Out of Stock</span>
+                )}
+              </div>
+
+              <div className="modal-actions">
+                <button 
+                  className={`add-to-cart ${addedToCart[product.id] ? 'added' : ''}`}
+                  onClick={() => handleAddToCart(product)}
+                  disabled={product.stock === 0}
+                >
+                  {addedToCart[product.id] ? (
+                    <>
+                      <FaCheck /> Added
+                    </>
+                  ) : (
+                    <>
+                      <FaShoppingCart /> Add to Cart
+                    </>
+                  )}
+                </button>
+                <button 
+                  className={`wishlist ${isInWishlist(product.id) ? 'active' : ''}`}
+                  onClick={() => handleWishlistToggle(product)}
+                >
+                  <FaHeart />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -172,6 +289,18 @@ const FeaturedProducts = () => {
             ))}
           </select>
         </div>
+        <div className="sort-filter">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+            <option value="newest">Newest</option>
+          </select>
+        </div>
       </div>
       
       <div className="products-grid">
@@ -188,6 +317,12 @@ const FeaturedProducts = () => {
                 <div className="discount-badge">
                   {product.discount}% OFF
                 </div>
+              )}
+              {product.isNew && (
+                <div className="new-badge">New</div>
+              )}
+              {product.isBestSeller && (
+                <div className="best-seller-badge">Best Seller</div>
               )}
               <div className={`product-overlay ${hoveredProduct === product.id ? 'show' : ''}`}>
                 <button 
@@ -210,6 +345,12 @@ const FeaturedProducts = () => {
                   onClick={() => handleWishlistToggle(product)}
                 >
                   <FaHeart />
+                </button>
+                <button 
+                  className="quick-view"
+                  onClick={() => setShowQuickView(product)}
+                >
+                  <FaEye />
                 </button>
               </div>
             </div>
@@ -258,6 +399,12 @@ const FeaturedProducts = () => {
           </div>
         ))}
       </div>
+      {showQuickView && (
+        <QuickViewModal 
+          product={showQuickView} 
+          onClose={() => setShowQuickView(null)} 
+        />
+      )}
       <ToastContainer />
     </section>
   );
