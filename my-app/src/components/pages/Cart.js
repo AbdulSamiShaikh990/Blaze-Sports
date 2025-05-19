@@ -84,7 +84,7 @@ const Cart = () => {
                     <div className="item-header">
                       <div className="item-title">
                         <h3>{item.name}</h3>
-                        <p className="item-category">{item.category}</p>
+                      <p className="item-category">{typeof item.category === 'object' ? item.category.name : item.category}</p>
                       </div>
                       <button 
                         className="remove-btn"

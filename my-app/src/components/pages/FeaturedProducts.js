@@ -78,7 +78,7 @@ const FeaturedProducts = () => {
   }, [products, activeCategory, priceRange, ratings, searchQuery]);
 
   const handleAddToCart = (product) => {
-    addToCart(product._id);
+    addToCart({ ...product, id: product._id, category: product.category.name });
     toast.success(`${product.name} added to cart!`);
   };
 
