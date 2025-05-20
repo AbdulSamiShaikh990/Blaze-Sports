@@ -1,11 +1,11 @@
 import React from 'react';
-import FeaturedProducts from './FeaturedProducts';
+import SimpleProducts from './SimpleProducts';
 
 const Products = () => {
   return (
     <div className="products-page">
       <h1>Our Products</h1>
-      <FeaturedProducts />
+      <SimpleProducts />
     </div>
   );
 };

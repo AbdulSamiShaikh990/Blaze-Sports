@@ -1,8 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { FaHome, FaTshirt, FaFootballBall, FaRunning, FaBasketballBall, 
-         FaVolleyballBall, FaTableTennis, FaTimes, FaFilter,
-         FaArrowRight, FaStar } from 'react-icons/fa';
-import { GiCricketBat, GiBoxingGlove } from 'react-icons/gi';
+import { FaHome, FaFootballBall, FaBasketballBall, FaTimes, FaFilter,
+         FaArrowRight, FaStar, FaShuttleVan } from 'react-icons/fa';
+import { GiCricketBat } from 'react-icons/gi';
 import './Sidebar.css';
 
 // Create context for filter state
@@ -98,12 +97,8 @@ const Sidebar = () => {
     { name: 'All Products', icon: <FaHome />, color: '#4CAF50' },
     { name: 'Cricket', icon: <GiCricketBat />, color: '#2196F3' },
     { name: 'Football', icon: <FaFootballBall />, color: '#FF9800' },
-    { name: 'Running', icon: <FaRunning />, color: '#E91E63' },
     { name: 'Basketball', icon: <FaBasketballBall />, color: '#9C27B0' },
-    { name: 'Volleyball', icon: <FaVolleyballBall />, color: '#FF5722' },
-    { name: 'Table Tennis', icon: <FaTableTennis />, color: '#795548' },
-    { name: 'Boxing', icon: <GiBoxingGlove />, color: '#607D8B' },
-    { name: 'Sports Wear', icon: <FaTshirt />, color: '#009688' },
+    { name: 'Badminton', icon: <FaShuttleVan />, color: '#FF5722' },
   ];
 
   return (

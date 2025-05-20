@@ -5,52 +5,60 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../FeaturedProducts.css';
 import ProductDetailsModal from './ProductDetailsModal';
+import axios from 'axios';
 
-const sampleProducts = [
-  {
-    _id: '1',
-    name: 'Basketball',
-    image: '/products/basketball.jpg',
-    price: 2500,
-    rating: 4.5,
-    category: { name: 'Sports' },
-    description: 'High quality basketball for indoor and outdoor use.'
-  },
-  {
-    _id: '2',
-    name: 'Tennis Racket',
-    image: '/products/tennisracket.jpg',
-    price: 4500,
-    rating: 4.0,
-    category: { name: 'Sports' },
-    description: 'Lightweight tennis racket with excellent grip.'
-  },
-  {
-    _id: '3',
-    name: 'Football',
-    image: '/products/football.jpeg',
-    price: 3000,
-    rating: 4.7,
-    category: { name: 'Sports' },
-    description: 'Durable football suitable for all weather conditions.'
-  }
-];
+// API base URL
+const API_URL = 'http://localhost:5000/api';
 
 const FeaturedProducts = () => {
   const { addToCart } = useShop();
   const { activeCategory, priceRange, ratings, filtersApplied } = useFilters();
   const [searchQuery, setSearchQuery] = useState('');
-  const [products, setProducts] = useState(sampleProducts);
-  const [filteredProducts, setFilteredProducts] = useState(sampleProducts);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch products from the database
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // Fetch featured products from the API
+        const response = await axios.get(`${API_URL}/products/featured`);
+        
+        // Add default rating if not present
+        const productsWithRatings = response.data.map(product => ({
+          ...product,
+          rating: product.rating || 4.5 // Default rating if not available
+        }));
+        
+        setProducts(productsWithRatings);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products. Please try again later.');
+        // Set empty array if there's an error
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Filter products based on user selections
   useEffect(() => {
     let results = [...products];
 
     // Category filter
     if (activeCategory && activeCategory !== 'All Products') {
-      results = results.filter(product => product.category.name === activeCategory);
+      results = results.filter(product => 
+        product.category && product.category.name === activeCategory
+      );
     }
 
     // Price filter
@@ -70,7 +78,7 @@ const FeaturedProducts = () => {
       const query = searchQuery.toLowerCase();
       results = results.filter(product => 
         product.name.toLowerCase().includes(query) || 
-        product.category.name.toLowerCase().includes(query)
+        (product.category && product.category.name.toLowerCase().includes(query))
       );
     }
 
@@ -78,7 +86,11 @@ const FeaturedProducts = () => {
   }, [products, activeCategory, priceRange, ratings, searchQuery]);
 
   const handleAddToCart = (product) => {
-    addToCart({ ...product, id: product._id, category: product.category.name });
+    addToCart({ 
+      ...product, 
+      id: product._id, 
+      category: product.category ? product.category.name : 'Uncategorized'
+    });
     toast.success(`${product.name} added to cart!`);
   };
 
@@ -100,6 +112,7 @@ const FeaturedProducts = () => {
     <div className="featured-products">
       <div className="featured-products-header">
         <h2>Featured Products</h2>
+        <p>Discover our premium selection of sports equipment</p>
         <div className="search-box">
           <input
             type="text"
@@ -110,37 +123,68 @@ const FeaturedProducts = () => {
         </div>
       </div>
 
-      <div className="products-grid">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <div key={product._id} className="product-card" onClick={() => openModal(product)} style={{ cursor: 'pointer' }}>
-              <img src={product.image} alt={product.name} />
-              <h3>{product.name}</h3>
-              <div className="product-info">
-                <span className="product-price">{formatPrice(product.price)}</span>
-                <div className="product-rating">
-                  {'★'.repeat(Math.floor(product.rating || 0))}
-                  {'☆'.repeat(5 - Math.floor(product.rating || 0))}
-                  <span className="rating-value">{product.rating || 0}</span>
+      {loading ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading products...</p>
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          <p>{error}</p>
+        </div>
+      ) : (
+        <div className="products-grid">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <div key={product._id} className="product-card" onClick={() => openModal(product)} style={{ cursor: 'pointer' }}>
+                <div className="product-image">
+                  <img 
+                    src={product.image.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
+                    alt={product.name} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/placeholder-image.jpg';
+                    }}
+                  />
+                </div>
+                <div className="product-info">
+                  <div>
+                    <h3 className="product-title">{product.name}</h3>
+                    <div className="product-rating">
+                      {'★'.repeat(Math.floor(product.rating || 0))}
+                      {'☆'.repeat(5 - Math.floor(product.rating || 0))}
+                      <span className="rating-value">{product.rating || 0}</span>
+                    </div>
+                    <p className="product-description">
+                      {product.description ? 
+                        (product.description.length > 60 ? 
+                          `${product.description.substring(0, 60)}...` : 
+                          product.description) : 
+                        'No description available'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="product-price">{formatPrice(product.price)}</span>
+                    <button
+                      className="add-to-cart-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
               </div>
-              <button
-                className="add-to-cart-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart(product);
-                }}
-              >
-                Add to Cart
-              </button>
+            ))
+          ) : (
+            <div className="no-products-message">
+              <p>No products match your current filters.</p>
             </div>
-          ))
-        ) : (
-          <div className="no-products-message">
-            <p>No products match your current filters.</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
       {isModalOpen && <ProductDetailsModal product={selectedProduct} onClose={closeModal} />}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
@@ -148,3 +192,4 @@ const FeaturedProducts = () => {
 };
 
 export default FeaturedProducts;
+

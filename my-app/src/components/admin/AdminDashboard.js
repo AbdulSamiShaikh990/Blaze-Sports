@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminModal from './AdminModal';
 import { FaUsers, FaBoxOpen, FaTags, FaTachometerAlt, FaPlus } from 'react-icons/fa';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import {
@@ -31,6 +32,10 @@ const cardIcons = {
 };
 
 const AdminDashboard = () => {
+  // Create a ref for each modal to ensure they stay mounted
+  const userModalRef = React.useRef(null);
+  const productModalRef = React.useRef(null);
+  const categoryModalRef = React.useRef(null);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedItem, setSelectedItem] = useState(null);
   const [editData, setEditData] = useState(null);
@@ -190,6 +195,7 @@ const AdminDashboard = () => {
 
   // Add Product Handler
   const handleAddProductChange = (e) => {
+    e.persist && e.persist(); // For React synthetic events
     const { name, value, type, checked, files } = e.target;
     if (type === 'checkbox') {
       setAddProductData({ ...addProductData, [name]: checked });
@@ -202,18 +208,25 @@ const AdminDashboard = () => {
 
   const handleAddProductSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setFormError(null);
+    
     try {
       const formData = new FormData();
       Object.entries(addProductData).forEach(([key, value]) => {
         if (value !== null && value !== undefined) formData.append(key, value);
       });
-      await api.post('/products', formData, {
+      
+      const response = await api.post('/products', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setShowAddProduct(false);
+      
+      // Reset form data but keep the form open
       setAddProductData({ name: '', price: '', category: '', description: '', stock: '', featured: false, image: null });
       fetchAllData();
+      
+      // Show success message
+      setFormError('Product added successfully! You can add another or click Cancel to close.');
     } catch (err) {
       setFormError(err.response?.data?.message || 'Failed to add product');
     }
@@ -250,12 +263,18 @@ const AdminDashboard = () => {
   };
   const handleAddUserSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setFormError(null);
+    
     try {
       await api.post('/auth/signup', { ...addUserData, userType: addUserData.role });
-      setShowAddUser(false);
+      
+      // Reset form data but keep the form open
       setAddUserData({ name: '', email: '', password: '', role: 'user' });
       fetchAllData();
+      
+      // Show success message
+      setFormError('User added successfully! You can add another or click Cancel to close.');
     } catch (err) {
       setFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to add user');
     }
@@ -283,12 +302,18 @@ const AdminDashboard = () => {
   };
   const handleAddCategorySubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setFormError(null);
+    
     try {
       await api.post('/categories', addCategoryData);
-      setShowAddCategory(false);
+      
+      // Reset form data but keep the form open
       setAddCategoryData({ name: '', description: '' });
       fetchAllData();
+      
+      // Show success message
+      setFormError('Category added successfully! You can add another or click Cancel to close.');
     } catch (err) {
       setFormError(err.response?.data?.message || 'Failed to add category');
     }
@@ -372,30 +397,6 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
-          {/* Add User Modal */}
-          {showAddUser && (
-            <div className="modal-overlay">
-              <div className="modal-content">
-                <h2>Add New User</h2>
-                <form onSubmit={handleAddUserSubmit} className="details-form">
-                  <label>Name:<input name="name" value={addUserData.name} onChange={handleAddUserChange} required /></label>
-                  <label>Email:<input name="email" type="email" value={addUserData.email} onChange={handleAddUserChange} required /></label>
-                  <label>Password:<input name="password" type="password" value={addUserData.password} onChange={handleAddUserChange} required /></label>
-                  <label>Role:
-                    <select name="role" value={addUserData.role} onChange={handleAddUserChange} required>
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </label>
-                  {formError && <div className="error-message">{formError}</div>}
-                  <div style={{display:'flex',gap:12}}>
-                    <button className="save-btn" type="submit">Add User</button>
-                    <button className="edit-btn" type="button" onClick={()=>setShowAddUser(false)}>Cancel</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
       );
     }
@@ -425,10 +426,10 @@ const AdminDashboard = () => {
           </table>
           {/* Add Category Modal */}
           {showAddCategory && (
-            <div className="modal-overlay">
-              <div className="modal-content">
+            <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h2>Add New Category</h2>
-                <form onSubmit={handleAddCategorySubmit} className="details-form">
+                <form onSubmit={handleAddCategorySubmit} className="details-form" onClick={(e) => e.stopPropagation()}>
                   <label>Name:<input name="name" value={addCategoryData.name} onChange={handleAddCategoryChange} required /></label>
                   <label>Description:<input name="description" value={addCategoryData.description} onChange={handleAddCategoryChange} required /></label>
                   {formError && <div className="error-message">{formError}</div>}
@@ -472,10 +473,10 @@ const AdminDashboard = () => {
           </table>
           {/* Add Product Modal */}
           {showAddProduct && (
-            <div className="modal-overlay">
-              <div className="modal-content">
+            <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h2>Add New Product</h2>
-                <form onSubmit={handleAddProductSubmit} className="details-form">
+                <form onSubmit={handleAddProductSubmit} className="details-form" onClick={(e) => e.stopPropagation()}>
                   <label>Name:<input name="name" value={addProductData.name} onChange={handleAddProductChange} required /></label>
                   <label>Price:<input name="price" type="number" value={addProductData.price} onChange={handleAddProductChange} required /></label>
                   <label>Category:
@@ -576,6 +577,76 @@ const AdminDashboard = () => {
             <div className="section-right">{renderDetails()}</div>
           </div>
         )}
+        
+        {/* User Add Modal - Persistent and won't disappear */}
+        <AdminModal 
+          isOpen={showAddUser} 
+          onClose={() => setShowAddUser(false)} 
+          title="Add New User"
+        >
+          <form onSubmit={handleAddUserSubmit} className="details-form">
+            <label>Name:<input name="name" value={addUserData.name} onChange={handleAddUserChange} required /></label>
+            <label>Email:<input name="email" type="email" value={addUserData.email} onChange={handleAddUserChange} required /></label>
+            <label>Password:<input name="password" type="password" value={addUserData.password} onChange={handleAddUserChange} required /></label>
+            <label>Role:
+              <select name="role" value={addUserData.role} onChange={handleAddUserChange} required>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            {formError && <div className="error-message">{formError}</div>}
+            <div style={{display:'flex',gap:12,marginTop:15}}>
+              <button className="save-btn" type="submit">Add User</button>
+              <button className="edit-btn" type="button" onClick={()=>setShowAddUser(false)}>Cancel</button>
+            </div>
+          </form>
+        </AdminModal>
+        
+        {/* Category Add Modal - Persistent and won't disappear */}
+        <AdminModal 
+          isOpen={showAddCategory} 
+          onClose={() => setShowAddCategory(false)} 
+          title="Add New Category"
+        >
+          <form onSubmit={handleAddCategorySubmit} className="details-form">
+            <label>Name:<input name="name" value={addCategoryData.name} onChange={handleAddCategoryChange} required /></label>
+            <label>Description:<input name="description" value={addCategoryData.description} onChange={handleAddCategoryChange} required /></label>
+            {formError && <div className="error-message">{formError}</div>}
+            <div style={{display:'flex',gap:12,marginTop:15}}>
+              <button className="save-btn" type="submit">Add Category</button>
+              <button className="edit-btn" type="button" onClick={()=>setShowAddCategory(false)}>Cancel</button>
+            </div>
+          </form>
+        </AdminModal>
+        
+        {/* Product Add Modal - Persistent and won't disappear */}
+        <AdminModal 
+          isOpen={showAddProduct} 
+          onClose={() => setShowAddProduct(false)} 
+          title="Add New Product"
+        >
+          <form onSubmit={handleAddProductSubmit} className="details-form">
+            <label>Name:<input name="name" value={addProductData.name} onChange={handleAddProductChange} required /></label>
+            <label>Price:<input name="price" type="number" value={addProductData.price} onChange={handleAddProductChange} required /></label>
+            <label>Category:
+              <select name="category" value={addProductData.category} onChange={handleAddProductChange} required>
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat._id || cat.id} value={cat._id || cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </label>
+            <label>Description:<input name="description" value={addProductData.description} onChange={handleAddProductChange} /></label>
+            <label>Stock:<input name="stock" type="number" value={addProductData.stock} onChange={handleAddProductChange} /></label>
+            <label>Featured:<input name="featured" type="checkbox" checked={addProductData.featured} onChange={handleAddProductChange} /></label>
+            <label>Image:<input name="image" type="file" accept="image/*" onChange={handleAddProductChange} /></label>
+            {formError && <div className="error-message">{formError}</div>}
+            <div style={{display:'flex',gap:12,marginTop:15}}>
+              <button className="save-btn" type="submit">Add Product</button>
+              <button className="edit-btn" type="button" onClick={()=>setShowAddProduct(false)}>Cancel</button>
+            </div>
+          </form>
+        </AdminModal>
       </div>
     </div>
   );

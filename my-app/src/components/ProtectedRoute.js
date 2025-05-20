@@ -10,6 +10,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/new-login" state={{ from: location }} replace />;
   }
 
+  // Special case for AI recommendation page - allow both customer and admin access
+  if (location.pathname === '/ai-recommendation') {
+    return children;
+  }
+
   if (!allowedRoles.includes(user.userType)) {
     // Redirect to appropriate dashboard based on user type
     if (user.userType === 'admin') {
@@ -22,4 +27,4 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;

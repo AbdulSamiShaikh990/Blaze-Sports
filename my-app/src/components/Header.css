@@ -8,6 +8,9 @@
 html, body {
   width: 100%;
   overflow-x: hidden; /* ✅ Horizontal scroll ko remove karne ke liye */
+  zoom: 1 !important; /* Prevent zoom issues when resetting */
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Header Animation Keyframes */
@@ -19,62 +22,6 @@ html, body {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes shine {
-  0% {
-    background-position: -100% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes glow {
-  0% {
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-  }
-  100% {
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
   }
 }
 
@@ -104,6 +51,8 @@ html, body {
   max-width: 100%;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   animation: fadeIn 0.5s ease-out, glow 3s infinite;
+  transform-origin: top center; /* Fix for zoom reset issues */
+  transform: scale(1); /* Ensure proper scaling */
 }
 
 /* Add subtle texture to header */
@@ -264,6 +213,12 @@ html, body {
   max-width: 100%; /* ✅ Prevent overflow */
 }
 
+/* Search Container */
+.search-container {
+  position: relative;
+  z-index: 1001;
+}
+
 /* Search Box */
 .actions .search {
   background: rgba(255, 255, 255, 0.1);
@@ -285,6 +240,7 @@ html, body {
   animation: slideIn 0.5s ease-out 0.5s forwards;
   opacity: 1;
   z-index: 1000;
+  transform: scale(1); /* Fix for zoom reset issues */
 }
 
 .actions .search:focus-within,
@@ -338,6 +294,61 @@ html, body {
 .actions .search button:hover {
   background: rgba(255, 255, 255, 0.2) !important;
   transform: translateY(-2px);
+}
+
+/* Search Results Dropdown */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(35, 39, 54, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  margin-top: 5px;
+  padding: 10px 0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Search Result Item */
+.search-result-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.result-name {
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 3px;
+}
+
+.result-category {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.result-price {
+  color: #ff6347;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 3px;
 }
 
 /* ✅ Auth Buttons */
@@ -615,6 +626,7 @@ svg[class*="fa-"], i[class*="fa-"], span[class*="fa-"] {
   .header {
     flex-wrap: wrap;
     justify-content: center; /* ✅ Ensures centered content */
+    transform: scale(1); /* Fix for zoom reset issues */
   }
 
   .navbar {
@@ -629,6 +641,13 @@ svg[class*="fa-"], i[class*="fa-"], span[class*="fa-"] {
   .actions {
     flex-wrap: wrap;
     justify-content: center;
+  }
+  
+  /* Ensure search bar scales properly */
+  .actions .search {
+    width: 90%;
+    min-width: 300px;
+    margin-left: 0;
   }
 }
 
