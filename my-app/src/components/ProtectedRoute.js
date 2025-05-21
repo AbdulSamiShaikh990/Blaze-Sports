@@ -10,8 +10,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/new-login" state={{ from: location }} replace />;
   }
 
-  // Special case for AI recommendation page - allow both customer and admin access
-  if (location.pathname === '/ai-recommendation') {
+  // Special cases - allow both customer and admin access to these pages
+  if (location.pathname === '/ai-recommendation' || location.pathname === '/cart') {
     return children;
   }
 

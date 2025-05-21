@@ -52,14 +52,19 @@ const AdminDashboard = () => {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [addCategoryData, setAddCategoryData] = useState({ name: '', description: '' });
 
+  // Format price in PKR
+  const formatPrice = (price) => {
+    return `PKR ${Number(price).toLocaleString('en-PK')}`;
+  };
+
   // Fetch live data from backend
   const fetchAllData = async () => {
     setLoading(true);
     setError(null);
-      try {
-        const [usersRes, productsRes, categoriesRes] = await Promise.all([
-          api.get('/users'),
-          api.get('/products'),
+    try {
+      const [usersRes, productsRes, categoriesRes] = await Promise.all([
+        api.get('/users'),
+        api.get('/products'),
         api.get('/categories'),
       ]);
       setUsers(usersRes.data);
@@ -68,7 +73,7 @@ const AdminDashboard = () => {
     } catch (err) {
       setError('Failed to fetch dashboard data.');
     }
-        setLoading(false);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -460,8 +465,8 @@ const AdminDashboard = () => {
                 <tr key={prod.id || prod._id} onClick={() => setSelectedItem(prod)} className={selectedItem?.id === prod.id || selectedItem?._id === prod._id ? 'selected-row' : ''}>
                   <td>{prod.id || prod._id}</td>
                   <td>{prod.name}</td>
-                  <td>{typeof prod.category === 'object' ? prod.category?.name : prod.category}</td>
-                  <td>${prod.price}</td>
+                  <td>{typeof prod.category === 'object' && prod.category ? prod.category.name : prod.category || 'Uncategorized'}</td>
+                  <td>{formatPrice(prod.price)}</td>
                   <td>{prod.stock}</td>
                   <td>{prod.featured ? '⭐' : '-'}</td>
                   <td>
@@ -477,24 +482,35 @@ const AdminDashboard = () => {
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h2>Add New Product</h2>
                 <form onSubmit={handleAddProductSubmit} className="details-form" onClick={(e) => e.stopPropagation()}>
-                  <label>Name:<input name="name" value={addProductData.name} onChange={handleAddProductChange} required /></label>
-                  <label>Price:<input name="price" type="number" value={addProductData.price} onChange={handleAddProductChange} required /></label>
-                  <label>Category:
+                  <label>Product Name<input name="name" value={addProductData.name} onChange={handleAddProductChange} required placeholder="Enter product name" /></label>
+                  
+                  <label className="half-width">Price (PKR)<input name="price" type="number" value={addProductData.price} onChange={handleAddProductChange} required placeholder="Enter price in PKR" /></label>
+                  
+                  <label className="half-width">Stock Quantity<input name="stock" type="number" value={addProductData.stock} onChange={handleAddProductChange} required placeholder="Enter available quantity" /></label>
+                  
+                  <label>Category
                     <select name="category" value={addProductData.category} onChange={handleAddProductChange} required>
-                      <option value="">Select Category</option>
+                      <option value="">Select a category</option>
                       {categories.map(cat => (
                         <option key={cat._id || cat.id} value={cat._id || cat.id}>{cat.name}</option>
                       ))}
                     </select>
                   </label>
-                  <label>Description:<input name="description" value={addProductData.description} onChange={handleAddProductChange} /></label>
-                  <label>Stock:<input name="stock" type="number" value={addProductData.stock} onChange={handleAddProductChange} /></label>
-                  <label>Featured:<input name="featured" type="checkbox" checked={addProductData.featured} onChange={handleAddProductChange} /></label>
-                  <label>Image:<input name="image" type="file" accept="image/*" onChange={handleAddProductChange} /></label>
+                  
+                  <label>Description<textarea name="description" value={addProductData.description} onChange={handleAddProductChange} rows="3" placeholder="Enter product description" /></label>
+                  
+                  <label className="checkbox-label">
+                    <input name="featured" type="checkbox" checked={addProductData.featured} onChange={handleAddProductChange} />
+                    Featured Product (will be highlighted on homepage)
+                  </label>
+                  
+                  <label>Product Image<input name="image" type="file" accept="image/*" onChange={handleAddProductChange} /></label>
+                  
                   {formError && <div className="error-message">{formError}</div>}
-                  <div style={{display:'flex',gap:12}}>
+                  
+                  <div className="form-actions">
+                    <button className="cancel-btn" type="button" onClick={()=>setShowAddProduct(false)}>Cancel</button>
                     <button className="save-btn" type="submit">Add Product</button>
-                    <button className="edit-btn" type="button" onClick={()=>setShowAddProduct(false)}>Cancel</button>
                   </div>
                 </form>
               </div>
@@ -626,24 +642,35 @@ const AdminDashboard = () => {
           title="Add New Product"
         >
           <form onSubmit={handleAddProductSubmit} className="details-form">
-            <label>Name:<input name="name" value={addProductData.name} onChange={handleAddProductChange} required /></label>
-            <label>Price:<input name="price" type="number" value={addProductData.price} onChange={handleAddProductChange} required /></label>
-            <label>Category:
+            <label>Product Name<input name="name" value={addProductData.name} onChange={handleAddProductChange} required placeholder="Enter product name" /></label>
+            
+            <label className="half-width">Price (PKR)<input name="price" type="number" value={addProductData.price} onChange={handleAddProductChange} required placeholder="Enter price in PKR" /></label>
+            
+            <label className="half-width">Stock Quantity<input name="stock" type="number" value={addProductData.stock} onChange={handleAddProductChange} required placeholder="Enter available quantity" /></label>
+            
+            <label>Category
               <select name="category" value={addProductData.category} onChange={handleAddProductChange} required>
-                <option value="">Select Category</option>
+                <option value="">Select a category</option>
                 {categories.map(cat => (
                   <option key={cat._id || cat.id} value={cat._id || cat.id}>{cat.name}</option>
                 ))}
               </select>
             </label>
-            <label>Description:<input name="description" value={addProductData.description} onChange={handleAddProductChange} /></label>
-            <label>Stock:<input name="stock" type="number" value={addProductData.stock} onChange={handleAddProductChange} /></label>
-            <label>Featured:<input name="featured" type="checkbox" checked={addProductData.featured} onChange={handleAddProductChange} /></label>
-            <label>Image:<input name="image" type="file" accept="image/*" onChange={handleAddProductChange} /></label>
+            
+            <label>Description<textarea name="description" value={addProductData.description} onChange={handleAddProductChange} rows="3" placeholder="Enter product description" /></label>
+            
+            <label className="checkbox-label">
+              <input name="featured" type="checkbox" checked={addProductData.featured} onChange={handleAddProductChange} />
+              Featured Product (will be highlighted on homepage)
+            </label>
+            
+            <label>Product Image<input name="image" type="file" accept="image/*" onChange={handleAddProductChange} /></label>
+            
             {formError && <div className="error-message">{formError}</div>}
-            <div style={{display:'flex',gap:12,marginTop:15}}>
+            
+            <div className="form-actions">
+              <button className="cancel-btn" type="button" onClick={()=>setShowAddProduct(false)}>Cancel</button>
               <button className="save-btn" type="submit">Add Product</button>
-              <button className="edit-btn" type="button" onClick={()=>setShowAddProduct(false)}>Cancel</button>
             </div>
           </form>
         </AdminModal>

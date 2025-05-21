@@ -73,7 +73,14 @@ const Cart = () => {
               {cart.map(item => (
                 <div key={item.id} className="cart-item">
                   <div className="item-image">
-                    <img src={item.image} alt={item.name} />
+                    <img 
+                      src={item.image ? `http://localhost:5000${item.image}` : '/placeholder-image.jpg'} 
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/placeholder-image.jpg';
+                      }} 
+                    />
                     {item.discount > 0 && (
                       <div className="discount-badge">
                         {item.discount}% OFF

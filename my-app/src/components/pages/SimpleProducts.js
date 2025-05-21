@@ -16,13 +16,13 @@ import { GiCricketBat } from 'react-icons/gi';
 // API base URL
 const API_URL = 'http://localhost:5000/api';
 
-const SimpleProducts = () => {
+const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, initialOpenModal = false }) => {
   const { addToCart } = useShop();
   const { ratings, filtersApplied } = useFilters();
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -56,6 +56,15 @@ const SimpleProducts = () => {
         
         setProducts(productsWithRatings);
         setError(null);
+
+        // If initialProductId is provided, find and open that product's modal
+        if (initialProductId && initialOpenModal) {
+          const selectedProduct = productsWithRatings.find(p => p._id === initialProductId);
+          if (selectedProduct) {
+            setSelectedProduct(selectedProduct);
+            setIsModalOpen(true);
+          }
+        }
       } catch (err) {
         console.error('Error fetching products:', err);
         setError('Failed to load products. Please try again later.');
@@ -67,7 +76,14 @@ const SimpleProducts = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [initialProductId, initialOpenModal]);
+
+  // Set initial search query when it changes (from URL params)
+  useEffect(() => {
+    if (initialSearchQuery) {
+      setSearchQuery(initialSearchQuery);
+    }
+  }, [initialSearchQuery]);
 
   // Filter products based on user selections
   useEffect(() => {
@@ -207,6 +223,10 @@ const SimpleProducts = () => {
       ) : error ? (
         <div className="error-message">
           <p>{error}</p>
+        </div>
+      ) : searchQuery && filteredProducts.length === 0 ? (
+        <div className="no-products-message">
+          <p>No products found matching "{searchQuery}". Try a different search term or browse our categories.</p>
         </div>
       ) : (
         <div className="products-grid">

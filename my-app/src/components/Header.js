@@ -15,22 +15,22 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   
-  // Fetch featured products when component mounts
+  // Fetch all products when component mounts
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
+    const fetchAllProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/products/featured');
-        setFeaturedProducts(response.data);
+        const response = await axios.get('http://localhost:5000/api/products');
+        setAllProducts(response.data);
       } catch (error) {
-        console.error('Error fetching featured products:', error);
+        console.error('Error fetching products:', error);
         // If API fails, use empty array
-        setFeaturedProducts([]);
+        setAllProducts([]);
       }
     };
     
-    fetchFeaturedProducts();
+    fetchAllProducts();
   }, []);
 
   const handleNavigation = (sectionId) => {
@@ -101,13 +101,14 @@ const Header = () => {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (e.target.value.trim() !== '') {
-                  // Search through featured products
+                  // Search through all products
                   const query = e.target.value.toLowerCase();
-                  const results = featuredProducts.filter(product => 
+                  const results = allProducts.filter(product => 
                     product.name.toLowerCase().includes(query) || 
                     (product.category && product.category.name.toLowerCase().includes(query))
                   );
-                  setSearchResults(results);
+                  // Limit to top 5 results for dropdown
+                  setSearchResults(results.slice(0, 5));
                   setShowResults(true);
                 } else {
                   setSearchResults([]);
@@ -122,6 +123,14 @@ const Header = () => {
               onBlur={() => {
                 // Delay hiding results to allow clicking on them
                 setTimeout(() => setShowResults(false), 200);
+              }}
+              onKeyPress={(e) => {
+                // Navigate to products page on Enter key
+                if (e.key === 'Enter' && searchQuery.trim() !== '') {
+                  navigate('/products', { state: { searchQuery } });
+                  setSearchQuery('');
+                  setShowResults(false);
+                }
               }}
             />
             <button onClick={() => {
@@ -144,8 +153,13 @@ const Header = () => {
                   key={product._id} 
                   className="search-result-item"
                   onClick={() => {
-                    // Navigate to product details page
-                    navigate(`/products/${product._id}`);
+                    // Navigate to products page and open the specific product modal
+                    navigate('/products', { 
+                      state: { 
+                        productId: product._id,
+                        openModal: true
+                      }
+                    });
                     setSearchQuery('');
                     setShowResults(false);
                   }}

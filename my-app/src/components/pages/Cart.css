@@ -121,13 +121,42 @@
   100% { background-position: 200% center; }
 }
 
+/* CSS Variables for Light/Dark Mode */
+:root {
+  --text-color: #2d3436;
+  --text-color-secondary: #636e72;
+  --primary-rgb: 0, 123, 255;
+  --primary-color: #0984e3;
+  --bg-primary-rgb: 255, 255, 255;
+  --bg-secondary-rgb: 245, 246, 250;
+  --border-rgb: 220, 221, 225;
+  --button-text: white;
+  --cart-bg: #ffffff;
+  --cart-item-bg: #f8f9fa;
+  --cart-item-hover: #f1f2f6;
+}
+
+[data-theme='dark'] {
+  --text-color: #f5f6fa;
+  --text-color-secondary: #dcdde1;
+  --primary-rgb: 116, 185, 255;
+  --primary-color: #74b9ff;
+  --bg-primary-rgb: 30, 34, 48;
+  --bg-secondary-rgb: 25, 28, 40;
+  --border-rgb: 50, 55, 70;
+  --button-text: white;
+  --cart-bg: rgba(30, 34, 48, 0.95);
+  --cart-item-bg: rgba(35, 39, 54, 0.95);
+  --cart-item-hover: rgba(40, 44, 60, 0.95);
+}
+
 /* Main Page Enhancements */
 .cart-page {
   min-height: 100vh;
   padding: 2rem;
   background: linear-gradient(135deg, 
-    rgba(42, 48, 66, 0.95),
-    rgba(35, 39, 54, 0.95)
+    rgba(var(--bg-primary-rgb), 0.95),
+    rgba(var(--bg-secondary-rgb), 0.95)
   );
   color: var(--text-color);
   animation: slideUp 0.5s ease-out;
@@ -156,11 +185,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  background: linear-gradient(
-    145deg,
-    rgba(42, 48, 66, 0.95),
-    rgba(35, 39, 54, 0.95)
-  );
+  background: var(--cart-bg);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 30px;
@@ -221,7 +246,7 @@
   gap: 1rem;
   margin: 0;
   font-size: 2.2rem;
-  color: #2d3436;
+  color: var(--text-color);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   font-weight: 800;
   letter-spacing: -0.5px;
@@ -251,19 +276,18 @@
 
 /* ✅ Empty Cart */
 .empty-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 5rem 2rem;
-  background: linear-gradient(
-    145deg,
-    rgba(42, 48, 66, 0.95),
-    rgba(35, 39, 54, 0.95)
-  );
+  padding: 4rem 2rem;
+  background: var(--cart-item-bg);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 30px;
   margin: 2rem 0;
   animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   position: relative;
-  overflow: hidden;
 }
 
 .empty-cart::before {
@@ -300,14 +324,13 @@
 }
 
 .empty-cart p {
-  color: var(--text-secondary);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2.5rem;
-  font-size: 1.2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: 1.1rem;
+  color: var(--text-color-secondary);
+  margin-bottom: 2rem;
+  max-width: 500px;
   line-height: 1.6;
+  font-weight: 400;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* ✅ Back Button */
@@ -344,16 +367,15 @@
 .cart-items-header h3 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #2d3436;
+  color: var(--text-color);
   letter-spacing: -0.5px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .items-count {
-  color: #636e72;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--text-color-secondary);
   font-weight: 500;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cart-content {
@@ -371,14 +393,11 @@
 /* ✅ Individual Cart Item */
 .cart-item {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 200px 1fr;
   gap: 2rem;
   padding: 2rem;
-  background: linear-gradient(
-    145deg,
-    rgba(42, 48, 66, 0.95),
-    rgba(35, 39, 54, 0.95)
-  );
+  margin-bottom: 2rem;
+  background: var(--cart-item-bg);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 25px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -388,12 +407,8 @@
 }
 
 .cart-item:hover {
-  transform: translateY(-5px) scale(1.02);
-  background: linear-gradient(
-    145deg,
-    rgba(48, 54, 74, 0.95),
-    rgba(42, 48, 66, 0.95)
-  );
+  transform: translateY(-5px);
+  background: var(--cart-item-hover);
   box-shadow: 
     0 15px 30px rgba(0, 0, 0, 0.2),
     inset 0 0 20px rgba(255, 255, 255, 0.1);
@@ -463,7 +478,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  color: #2d3436;
+  color: var(--text-color);
 }
 
 .item-header {
@@ -475,7 +490,7 @@
 .item-title h3 {
   margin: 0;
   font-size: 1.6rem;
-  color: #2d3436;
+  color: var(--text-color);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
   font-weight: 700;
   margin-bottom: 0.5rem;
@@ -483,13 +498,15 @@
 }
 
 .item-category {
-  color: #0984e3;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.9;
+  color: var(--primary-color);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-top: 0.3rem;
+  display: inline-block;
+  background: rgba(var(--primary-rgb), 0.1);
+  padding: 0.3rem 0.8rem;
+  border-radius: 30px;
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
 }
 
 .item-features {
@@ -555,7 +572,7 @@
 
 .quantity-label {
   font-size: 1.1rem;
-  color: #2d3436;
+  color: var(--text-color);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
   font-weight: 500;
 }
@@ -626,7 +643,7 @@
   font-weight: 600;
   min-width: 35px;
   text-align: center;
-  color: #2d3436;
+  color: var(--text-color);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
   font-size: 1.2rem;
 }
@@ -753,10 +770,11 @@
 .summary-item {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  color: #2d3436;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(var(--border-rgb), 0.1);
   font-size: 1.1rem;
+  color: var(--text-color-secondary);
+  font-weight: 500;
 }
 
 .summary-item.total {
