@@ -4,7 +4,7 @@ import { useShop } from '../../context/ShopContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../FeaturedProducts.css';
-import ProductDetailsModal from './ProductDetailsModal';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -14,13 +14,12 @@ import 'slick-carousel/slick/slick-theme.css';
 const API_URL = 'http://localhost:5000/api';
 
 const FeaturedProducts = () => {
+  const navigate = useNavigate();
   const { addToCart } = useShop();
   const { activeCategory, priceRange, ratings, filtersApplied } = useFilters();
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -101,14 +100,9 @@ const FeaturedProducts = () => {
     return `PKR ${price.toLocaleString()}`;
   };
 
-  const openModal = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setSelectedProduct(null);
-    setIsModalOpen(false);
+  const viewProductDetails = (product) => {
+    console.log('Navigating to product details from featured products:', product);
+    navigate(`/products/${product._id}`);
   };
 
   return (
@@ -139,16 +133,20 @@ const FeaturedProducts = () => {
         <div className="slider-container">
           {filteredProducts.length > 0 ? (
             <Slider
-              dots={true}
+              dots={false}
               infinite={true}
-              speed={1000}
+              speed={8000}
               slidesToShow={4}
               slidesToScroll={1}
               autoplay={true}
-              autoplaySpeed={5000}
-              pauseOnHover={false}
+              autoplaySpeed={0}
+              pauseOnHover={true}
               cssEase={'linear'}
-              swipe={false}
+              swipe={true}
+              arrows={false}
+              centerMode={true}
+              centerPadding="0px"
+              className="continuous-slider products-slider"
               responsive={[
                 {
                   breakpoint: 1200,
@@ -172,11 +170,10 @@ const FeaturedProducts = () => {
                   }
                 }
               ]}
-              className="products-slider"
             >
               {filteredProducts.map((product) => (
                 <div key={product._id} className="slider-item">
-                  <div className="product-card" onClick={() => openModal(product)} style={{ cursor: 'pointer' }}>
+                  <div className="product-card" onClick={(e) => viewProductDetails(product)} style={{ cursor: 'pointer' }}>
                     <div className="product-image">
                       <img 
                         src={product.image && product.image.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
@@ -215,6 +212,12 @@ const FeaturedProducts = () => {
                         >
                           Add to Cart
                         </button>
+                        <button className="product-action-btn view-btn" onClick={(e) => {
+                          e.stopPropagation();
+                          viewProductDetails(product);
+                        }}>
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -228,7 +231,7 @@ const FeaturedProducts = () => {
           )}
         </div>
       )}
-      {isModalOpen && <ProductDetailsModal product={selectedProduct} onClose={closeModal} />}
+      {/* Product details now shown on a separate page */}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

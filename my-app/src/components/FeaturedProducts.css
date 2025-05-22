@@ -145,15 +145,37 @@
   margin-top: 3rem;
   position: relative;
   z-index: 1;
-  padding: 0 1rem;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 15px;
 }
 
 .products-slider {
   margin: 0 -10px;
 }
 
+.continuous-slider {
+  padding: 30px 0;
+}
+
 .slider-item {
   padding: 0 10px;
+  transition: transform 0.3s ease;
+}
+
+.continuous-slider .slider-item {
+  transform: translateY(0);
+  animation: carBounce 3s infinite ease-in-out;
+  animation-delay: calc(var(--animation-order, 0) * 0.5s);
+}
+
+.continuous-slider .slider-item:nth-child(odd) {
+  animation-delay: calc(var(--animation-order, 0) * 0.5s + 0.5s);
+}
+
+@keyframes carBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 /* Slick Slider Custom Styles */
@@ -224,6 +246,76 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/* Car-like styling for products in the continuous slider */
+.continuous-slider .product-card {
+  border-radius: 12px 12px 6px 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(var(--primary-rgb), 0.3);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  position: relative;
+}
+
+/* Car wheels */
+.continuous-slider .product-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 15px;
+  height: 15px;
+  background: #333;
+  border-radius: 50%;
+  border: 2px solid #555;
+  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.5);
+  z-index: 2;
+  animation: wheelRotate 1s linear infinite;
+}
+
+/* Second wheel */
+.continuous-slider .product-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 20%;
+  width: 15px;
+  height: 15px;
+  background: #333;
+  border-radius: 50%;
+  border: 2px solid #555;
+  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.5);
+  z-index: 2;
+  animation: wheelRotate 1s linear infinite;
+}
+
+@keyframes wheelRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Car shadow effect */
+.continuous-slider .slider-item {
+  position: relative;
+}
+
+.continuous-slider .slider-item::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 15%;
+  right: 15%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  filter: blur(4px);
+  border-radius: 50%;
+  z-index: -1;
+  animation: shadowMove 3s infinite ease-in-out;
+}
+
+@keyframes shadowMove {
+  0%, 100% { opacity: 0.6; transform: scaleX(1); }
+  50% { opacity: 0.8; transform: scaleX(0.9); }
 }
 
 .product-card:hover {
@@ -385,117 +477,31 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
-.quick-view-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 2rem;
-  backdrop-filter: blur(5px);
-}
+/* Quick view modal removed - using dedicated product page instead */
 
-.modal-content {
-  background: var(--bg-secondary);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 1000px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  animation: modalFadeIn 0.3s ease-out;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-}
 
-.close-button {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: none;
-  color: var(--text-color);
-  font-size: 2rem;
-  cursor: pointer;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  z-index: 2;
-}
 
-.close-button:hover {
-  background: rgba(0, 0, 0, 0.1);
-  transform: rotate(90deg);
-}
 
-.modal-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  padding: 2rem;
-}
 
-.modal-image {
-  position: relative;
-  border-radius: 15px;
-  overflow: hidden;
-  aspect-ratio: 1;
-}
 
-.modal-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 
-.modal-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
 
-.modal-info h2 {
-  font-size: 2rem;
-  color: var(--text-color);
-  margin: 0;
-  line-height: 1.3;
-}
 
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
 
-.modal-actions .add-to-cart {
-  flex: 1;
-  padding: 1.2rem 2rem;
-  font-size: 1.2rem;
-}
 
-.modal-actions .wishlist {
-  padding: 1.2rem;
-  font-size: 1.2rem;
-}
 
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 @media (max-width: 768px) {
   .featured-products {
@@ -531,26 +537,15 @@
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   }
 
-  .modal-body {
-    grid-template-columns: 1fr;
-  }
 
-  .modal-content {
-    width: 95%;
-    max-height: 95vh;
-  }
 
-  .modal-info h2 {
-    font-size: 1.5rem;
-  }
 
-  .modal-actions {
-    flex-direction: column;
-  }
 
-  .modal-actions .wishlist {
-    width: 100%;
-  }
+
+
+
+
+
 }
 
 /* Enhanced Animations */
