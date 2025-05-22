@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaShoppingCart, FaStar, FaHeart, FaSearch, FaFilter, FaCheck, FaEye } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -99,11 +100,11 @@ const sampleProducts = [
 ];
 
 const FeaturedProducts = () => {
+  const navigate = useNavigate();
   const [hoveredProduct, setHoveredProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
-  const [showQuickView, setShowQuickView] = useState(null);
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, cart } = useShop();
   const [addedToCart, setAddedToCart] = useState({});
 
@@ -169,94 +170,9 @@ const FeaturedProducts = () => {
     return price - (price * discount / 100);
   };
 
-  const QuickViewModal = ({ product, onClose }) => {
-    if (!product) return null;
-
-    return (
-      <div className="quick-view-modal" onClick={onClose}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
-          <button className="close-button" onClick={onClose}>×</button>
-          <div className="modal-body">
-            <div className="modal-image">
-              <img src={product.image} alt={product.name} />
-              {product.discount > 0 && (
-                <div className="discount-badge">
-                  {product.discount}% OFF
-                </div>
-              )}
-            </div>
-            <div className="modal-info">
-              <span className="product-category">{product.category}</span>
-              <h2>{product.name}</h2>
-              <p className="product-description">{product.description}</p>
-              
-              <div className="product-features">
-                {product.features.map((feature, index) => (
-                  <span key={index} className="feature-tag">
-                    {feature}
-                  </span>
-                ))}
-              </div>
-
-              <div className="product-rating">
-                <div className="stars">
-                  {[...Array(5)].map((_, index) => (
-                    <FaStar 
-                      key={index} 
-                      className={index < Math.floor(product.rating) ? 'filled' : ''}
-                    />
-                  ))}
-                </div>
-                <span className="reviews">({product.reviews} reviews)</span>
-              </div>
-
-              <div className="product-price">
-                {product.discount > 0 ? (
-                  <>
-                    <span className="original-price">₹{product.price.toLocaleString()}</span>
-                    <span className="price">₹{calculateDiscountedPrice(product.price, product.discount).toLocaleString()}</span>
-                  </>
-                ) : (
-                  <span className="price">₹{product.price.toLocaleString()}</span>
-                )}
-              </div>
-
-              <div className="stock-info">
-                {product.stock > 0 ? (
-                  <span className="in-stock">In Stock ({product.stock})</span>
-                ) : (
-                  <span className="out-of-stock">Out of Stock</span>
-                )}
-              </div>
-
-              <div className="modal-actions">
-                <button 
-                  className={`add-to-cart ${addedToCart[product.id] ? 'added' : ''}`}
-                  onClick={() => handleAddToCart(product)}
-                  disabled={product.stock === 0}
-                >
-                  {addedToCart[product.id] ? (
-                    <>
-                      <FaCheck /> Added
-                    </>
-                  ) : (
-                    <>
-                      <FaShoppingCart /> Add to Cart
-                    </>
-                  )}
-                </button>
-                <button 
-                  className={`wishlist ${isInWishlist(product.id) ? 'active' : ''}`}
-                  onClick={() => handleWishlistToggle(product)}
-                >
-                  <FaHeart />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  // Navigate to product details page
+  const handleViewProductDetails = (product) => {
+    navigate(`/products/${product.id}`);
   };
 
   return (
@@ -348,7 +264,7 @@ const FeaturedProducts = () => {
                 </button>
                 <button 
                   className="quick-view"
-                  onClick={() => setShowQuickView(product)}
+                  onClick={() => handleViewProductDetails(product)}
                 >
                   <FaEye />
                 </button>
@@ -399,12 +315,7 @@ const FeaturedProducts = () => {
           </div>
         ))}
       </div>
-      {showQuickView && (
-        <QuickViewModal 
-          product={showQuickView} 
-          onClose={() => setShowQuickView(null)} 
-        />
-      )}
+      {/* Product details now shown on a separate page */}
       <ToastContainer />
     </section>
   );

@@ -4,20 +4,22 @@ import { useShop } from '../../context/ShopContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../FeaturedProducts.css';
-import ProductDetailsModal from './ProductDetailsModal';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 // API base URL
 const API_URL = 'http://localhost:5000/api';
 
 const FeaturedProducts = () => {
+  const navigate = useNavigate();
   const { addToCart } = useShop();
   const { activeCategory, priceRange, ratings, filtersApplied } = useFilters();
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -98,14 +100,9 @@ const FeaturedProducts = () => {
     return `PKR ${price.toLocaleString()}`;
   };
 
-  const openModal = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setSelectedProduct(null);
-    setIsModalOpen(false);
+  const viewProductDetails = (product) => {
+    console.log('Navigating to product details from featured products:', product);
+    navigate(`/products/${product._id}`);
   };
 
   return (
@@ -133,51 +130,100 @@ const FeaturedProducts = () => {
           <p>{error}</p>
         </div>
       ) : (
-        <div className="products-grid">
+        <div className="slider-container">
           {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <div key={product._id} className="product-card" onClick={() => openModal(product)} style={{ cursor: 'pointer' }}>
-                <div className="product-image">
-                  <img 
-                    src={product.image.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
-                    alt={product.name} 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/placeholder-image.jpg';
-                    }}
-                  />
-                </div>
-                <div className="product-info">
-                  <div>
-                    <h3 className="product-title">{product.name}</h3>
-                    <div className="product-rating">
-                      {'★'.repeat(Math.floor(product.rating || 0))}
-                      {'☆'.repeat(5 - Math.floor(product.rating || 0))}
-                      <span className="rating-value">{product.rating || 0}</span>
+            <Slider
+              dots={false}
+              infinite={true}
+              speed={8000}
+              slidesToShow={4}
+              slidesToScroll={1}
+              autoplay={true}
+              autoplaySpeed={0}
+              pauseOnHover={true}
+              cssEase={'linear'}
+              swipe={true}
+              arrows={false}
+              centerMode={true}
+              centerPadding="0px"
+              className="continuous-slider products-slider"
+              responsive={[
+                {
+                  breakpoint: 1200,
+                  settings: {
+                    slidesToShow: 3,
+                    slidesToScroll: 1
+                  }
+                },
+                {
+                  breakpoint: 900,
+                  settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 1
+                  }
+                },
+                {
+                  breakpoint: 600,
+                  settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1
+                  }
+                }
+              ]}
+            >
+              {filteredProducts.map((product) => (
+                <div key={product._id} className="slider-item">
+                  <div className="product-card" onClick={(e) => viewProductDetails(product)} style={{ cursor: 'pointer' }}>
+                    <div className="product-image">
+                      <img 
+                        src={product.image && product.image.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
+                        alt={product.name} 
+                        onError={(e) => {
+                          console.log('Image failed to load:', product.image);
+                          e.target.onerror = null;
+                          e.target.src = '/placeholder-image.jpg';
+                        }}
+                      />
                     </div>
-                    <p className="product-description">
-                      {product.description ? 
-                        (product.description.length > 60 ? 
-                          `${product.description.substring(0, 60)}...` : 
-                          product.description) : 
-                        'No description available'}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="product-price">{formatPrice(product.price)}</span>
-                    <button
-                      className="add-to-cart-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                    >
-                      Add to Cart
-                    </button>
+                    <div className="product-info">
+                      <div>
+                        <h3 className="product-title">{product.name}</h3>
+                        <div className="product-rating">
+                          {'★'.repeat(Math.floor(product.rating || 0))}
+                          {'☆'.repeat(5 - Math.floor(product.rating || 0))}
+                          <span className="rating-value">{product.rating || 0}</span>
+                        </div>
+                        <p className="product-description">
+                          {product.description ? 
+                            (product.description.length > 60 ? 
+                              `${product.description.substring(0, 60)}...` : 
+                              product.description) : 
+                            'No description available'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="product-price">{formatPrice(product.price)}</span>
+                        <button
+                          className="add-to-cart-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(product);
+                          }}
+                        >
+                          Add to Cart
+                        </button>
+                        <button className="product-action-btn view-btn" onClick={(e) => {
+                          e.stopPropagation();
+                          viewProductDetails(product);
+                        }}>
+                          View Details
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </Slider>
           ) : (
             <div className="no-products-message">
               <p>No products match your current filters.</p>
@@ -185,7 +231,7 @@ const FeaturedProducts = () => {
           )}
         </div>
       )}
-      {isModalOpen && <ProductDetailsModal product={selectedProduct} onClose={closeModal} />}
+      {/* Product details now shown on a separate page */}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

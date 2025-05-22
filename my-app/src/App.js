@@ -15,6 +15,7 @@ import Categories from "./components/admin/Categories";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Products from "./components/pages/Products";
+import ProductDetailsPage from "./components/pages/ProductDetailsPage";
 import AboutUs from "./components/pages/AboutUs";
 import Contact from "./components/pages/Contact";
 
@@ -62,6 +63,7 @@ function App() {
                   {/* Protected Customer Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
+                <Route path="/products/:productId" element={<ProductDetailsPage />} />
                 <Route path="/about" element={<AboutUs />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/cart" element={

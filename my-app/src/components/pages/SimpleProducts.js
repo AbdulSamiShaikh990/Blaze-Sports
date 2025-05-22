@@ -4,7 +4,7 @@ import { useShop } from '../../context/ShopContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './ProductsSection.css';
-import ProductDetailsModal from './ProductDetailsModal';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   FaSearch, FaShoppingCart, FaHome, FaFootballBall, FaBasketballBall, 
@@ -16,17 +16,16 @@ import { GiCricketBat } from 'react-icons/gi';
 // API base URL
 const API_URL = 'http://localhost:5000/api';
 
-const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, initialOpenModal = false }) => {
+const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null }) => {
+  const navigate = useNavigate();
   const { addToCart } = useShop();
-  const { ratings, filtersApplied } = useFilters();
+  const { ratings } = useFilters();
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All Products');
@@ -57,13 +56,9 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
         setProducts(productsWithRatings);
         setError(null);
 
-        // If initialProductId is provided, find and open that product's modal
-        if (initialProductId && initialOpenModal) {
-          const selectedProduct = productsWithRatings.find(p => p._id === initialProductId);
-          if (selectedProduct) {
-            setSelectedProduct(selectedProduct);
-            setIsModalOpen(true);
-          }
+        // If initialProductId is provided, navigate to that product's details page
+        if (initialProductId) {
+          navigate(`/products/${initialProductId}`);
         }
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -76,7 +71,7 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
     };
 
     fetchProducts();
-  }, [initialProductId, initialOpenModal]);
+  }, [initialProductId, navigate]);
 
   // Set initial search query when it changes (from URL params)
   useEffect(() => {
@@ -133,14 +128,10 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
     return `PKR ${price.toLocaleString()}`;
   };
 
-  const openModal = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setSelectedProduct(null);
-    setIsModalOpen(false);
+  // Navigate to product details page
+  const viewProductDetails = (product) => {
+    console.log('Navigating to product details:', product);
+    navigate(`/products/${product._id}`);
   };
 
   return (
@@ -232,7 +223,7 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
         <div className="products-grid">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <div key={product._id} className="product-card" onClick={() => openModal(product)}>
+              <div key={product._id} className="product-card" onClick={() => viewProductDetails(product)}>
                 {product.featured && <div className="product-badge featured">Featured</div>}
                 {!product.featured && product.createdAt && new Date(product.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && 
                   <div className="product-badge new">New</div>
@@ -242,7 +233,10 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
                   <button className="quick-action-btn" onClick={(e) => { e.stopPropagation(); toast.info('Added to wishlist!'); }}>
                     <FaHeart />
                   </button>
-                  <button className="quick-action-btn" onClick={(e) => { e.stopPropagation(); openModal(product); }}>
+                  <button className="product-action-btn view-btn" onClick={(e) => {
+                    e.stopPropagation();
+                    viewProductDetails(product);
+                  }}>
                     <FaEye />
                   </button>
                   <button className="quick-action-btn" onClick={(e) => { e.stopPropagation(); toast.info('Share link copied!'); }}>
@@ -252,9 +246,10 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
                 
                 <div className="product-image">
                   <img 
-                    src={product.image?.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
+                    src={product.image && product.image.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
                     alt={product.name} 
                     onError={(e) => {
+                      console.log('Image failed to load:', product.image);
                       e.target.onerror = null;
                       e.target.src = '/placeholder-image.jpg';
                     }}
@@ -340,7 +335,7 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
           )}
         </div>
       )}
-      {isModalOpen && <ProductDetailsModal product={selectedProduct} onClose={closeModal} />}
+      {/* Product details now shown on a separate page */}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
