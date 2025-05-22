@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   FaTrash, FaArrowLeft, FaShoppingBag, FaMinus, 
   FaPlus, FaGift, FaTruck, FaShieldAlt, FaCreditCard,
-  FaBox, FaPercent, FaMoneyBillWave
+  FaBox, FaPercent, FaMoneyBillWave, FaTimes, FaCheck,
+  FaReceipt, FaMapMarkerAlt, FaUser, FaPhoneAlt
 } from "react-icons/fa";
 import { useShop } from "../../context/ShopContext";
 import { toast, ToastContainer } from 'react-toastify';
@@ -12,6 +13,14 @@ import "./Cart.css";
 
 const Cart = () => {
   const { cart, removeFromCart, updateCartQuantity, getCartTotal } = useShop();
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [orderDetails, setOrderDetails] = useState({
+    name: "",
+    email: "",
+    address: "",
+    phone: "",
+    paymentMethod: "credit-card"
+  });
 
   const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity >= 1) {
@@ -39,6 +48,33 @@ const Cart = () => {
   // Format currency in PKR
   const formatPrice = (price) => {
     return `PKR ${price.toLocaleString('en-PK')}`;
+  };
+
+  const handleCheckout = () => {
+    setShowReceipt(true);
+  };
+
+  const closeReceipt = () => {
+    setShowReceipt(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setOrderDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePlaceOrder = () => {
+    // Here you would normally process the order with a backend API
+    toast.success('Order placed successfully!', {
+      position: "top-center",
+      autoClose: 3000,
+    });
+    setShowReceipt(false);
+    // You could also clear the cart here if you want
+    // clearCart();
   };
 
   return (
@@ -161,7 +197,7 @@ const Cart = () => {
                   <span>Total Amount</span>
                   <span>{formatPrice(total)}</span>
                 </div>
-                <button className="checkout-btn">
+                <button className="checkout-btn" onClick={handleCheckout}>
                   <FaMoneyBillWave className="btn-icon" />
                   Proceed to Checkout
                 </button>
@@ -201,6 +237,143 @@ const Cart = () => {
           </div>
         )}
       </div>
+      {showReceipt && (
+        <div className="receipt-overlay">
+          <div className="receipt-modal">
+            <div className="receipt-header">
+              <h2><FaReceipt /> Order Receipt</h2>
+              <button className="close-btn" onClick={closeReceipt}>
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="receipt-content">
+              <div className="receipt-section">
+                <h3>Order Summary</h3>
+                <div className="receipt-items">
+                  {cart.map(item => (
+                    <div key={item.id} className="receipt-item">
+                      <div className="receipt-item-details">
+                        <span className="item-name">{item.name}</span>
+                        <span className="item-quantity">x{item.quantity}</span>
+                      </div>
+                      <span className="item-price">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="receipt-totals">
+                  <div className="receipt-total-row">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="receipt-total-row">
+                    <span>Shipping</span>
+                    <span>{formatPrice(shipping)}</span>
+                  </div>
+                  <div className="receipt-total-row">
+                    <span>Tax (5%)</span>
+                    <span>{formatPrice(tax)}</span>
+                  </div>
+                  <div className="receipt-total-row grand-total">
+                    <span>Total</span>
+                    <span>{formatPrice(total)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="receipt-section">
+                <h3>Shipping Information</h3>
+                <div className="receipt-form">
+                  <div className="form-group">
+                    <label><FaUser /> Full Name</label>
+                    <input 
+                      type="text" 
+                      name="name" 
+                      value={orderDetails.name} 
+                      onChange={handleInputChange} 
+                      placeholder="Your full name"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label><FaMapMarkerAlt /> Shipping Address</label>
+                    <textarea 
+                      name="address" 
+                      value={orderDetails.address} 
+                      onChange={handleInputChange} 
+                      placeholder="Your complete shipping address"
+                      required
+                    />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Email</label>
+                      <input 
+                        type="email" 
+                        name="email" 
+                        value={orderDetails.email} 
+                        onChange={handleInputChange} 
+                        placeholder="Your email address"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label><FaPhoneAlt /> Phone</label>
+                      <input 
+                        type="tel" 
+                        name="phone" 
+                        value={orderDetails.phone} 
+                        onChange={handleInputChange} 
+                        placeholder="Your phone number"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="receipt-section">
+                <h3>Payment Method</h3>
+                <div className="payment-options">
+                  <label className="payment-option">
+                    <input 
+                      type="radio" 
+                      name="paymentMethod" 
+                      value="credit-card" 
+                      checked={orderDetails.paymentMethod === "credit-card"}
+                      onChange={handleInputChange}
+                    />
+                    <span className="payment-icon"><FaCreditCard /></span>
+                    <span>Credit Card</span>
+                  </label>
+                  <label className="payment-option">
+                    <input 
+                      type="radio" 
+                      name="paymentMethod" 
+                      value="cash" 
+                      checked={orderDetails.paymentMethod === "cash"}
+                      onChange={handleInputChange}
+                    />
+                    <span className="payment-icon"><FaMoneyBillWave /></span>
+                    <span>Cash on Delivery</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div className="receipt-footer">
+              <button className="back-to-cart" onClick={closeReceipt}>
+                <FaArrowLeft /> Back to Cart
+              </button>
+              <button className="place-order-btn" onClick={handlePlaceOrder}>
+                <FaCheck /> Place Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <ToastContainer />
     </div>
   );

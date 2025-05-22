@@ -252,9 +252,10 @@ const SimpleProducts = ({ initialSearchQuery = '', initialProductId = null, init
                 
                 <div className="product-image">
                   <img 
-                    src={product.image?.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
+                    src={product.image && product.image.startsWith('/uploads') ? `http://localhost:5000${product.image}` : product.image} 
                     alt={product.name} 
                     onError={(e) => {
+                      console.log('Image failed to load:', product.image);
                       e.target.onerror = null;
                       e.target.src = '/placeholder-image.jpg';
                     }}
