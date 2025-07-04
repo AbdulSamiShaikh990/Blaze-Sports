@@ -1,0 +1,58 @@
+/* Top Notification Styles */
+.top-notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+.notification-content {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 16px;
+  max-width: 90%;
+}
+
+.notification-icon {
+  background-color: white;
+  color: #4CAF50;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Dark Mode Styles */
+[data-theme='dark'] .notification-content {
+  background-color: #74b9ff;
+  color: #1e2230;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .notification-icon {
+  background-color: #1e2230;
+  color: #74b9ff;
+}
