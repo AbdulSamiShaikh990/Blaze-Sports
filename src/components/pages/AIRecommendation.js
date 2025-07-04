@@ -10,9 +10,7 @@ const AIRecommendation = () => {
     gender: '',
     age: '',
     favoriteSport: '',
-    favoriteColor: '',
     skinTone: '',
-    outfitStyle: '',
     skillLevel: '',
     height: '',
     climate: '',
@@ -30,16 +28,7 @@ const AIRecommendation = () => {
     { id: 'tennis', name: 'Tennis', icon: <GiTennisRacket /> }
   ];
 
-  const colorOptions = [
-    { id: 'black', name: 'Black', color: '#000000' },
-    { id: 'white', name: 'White', color: '#FFFFFF' },
-    { id: 'red', name: 'Red', color: '#FF0000' },
-    { id: 'blue', name: 'Blue', color: '#0000FF' },
-    { id: 'green', name: 'Green', color: '#008000' },
-    { id: 'yellow', name: 'Yellow', color: '#FFFF00' },
-    { id: 'purple', name: 'Purple', color: '#800080' },
-    { id: 'orange', name: 'Orange', color: '#FFA500' }
-  ];
+
 
   const sportsPositions = {
     cricket: [
@@ -75,18 +64,13 @@ const AIRecommendation = () => {
     }));
   };
 
-  const handleColorSelect = (colorId) => {
-    setFormData(prev => ({
-      ...prev,
-      favoriteColor: colorId
-    }));
-  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const recommendedProducts = generateRecommendations(formData);
     setRecommendations({ products: recommendedProducts });
-    setStep(4); // Changed from 3 to 4 to show the recommendations page
+    setStep(3); // Show the recommendations page
   };
 
   const generateRecommendations = (data) => {
@@ -143,7 +127,8 @@ const AIRecommendation = () => {
       generic: {
         gloves: process.env.PUBLIC_URL + '/Product_Images/gloves.jpeg',
         waterBottle: process.env.PUBLIC_URL + '/Product_Images/waterbottle.jpeg',
-        airPump: process.env.PUBLIC_URL + '/Product_Images/airpump.jpeg'
+        airPump: process.env.PUBLIC_URL + '/Product_Images/airpump.jpeg',
+        sportsCap: process.env.PUBLIC_URL + '/Product_Images/cricket_cap.jpeg'
       }
     };
 
@@ -441,7 +426,7 @@ const AIRecommendation = () => {
         id: recommendations.length + 1,
         name: `Sports Cap`,
         price: 1200,
-        image: productImages.generic.image2,
+        image: productImages.generic.sportsCap,
         reason: `Provides sun protection for hot weather. ${data.favoriteColor ? `Available in your preferred ${data.favoriteColor} color.` : ''} ${colorRecommendation}`,
         category: "Accessories"
       });
@@ -605,46 +590,11 @@ const AIRecommendation = () => {
             </div>
             <div className="button-group">
               <button className="back-btn" onClick={() => setStep(1)}>Back</button>
-              <button className="next-btn" onClick={() => setStep(3)}>Next</button>
+              <button className="next-btn" onClick={handleSubmit}>Get Recommendations</button>
             </div>
           </div>
         );
       case 3:
-        return (
-          <div className="form-step">
-            {renderBackButton()}
-            <h2>Style Preferences</h2>
-            <div className="form-group">
-              <label>Favorite Color</label>
-              <div className="color-grid">
-                {colorOptions.map(color => (
-                  <div
-                    key={color.id}
-                    className={`color-option ${formData.favoriteColor === color.id ? 'selected' : ''}`}
-                    onClick={() => handleColorSelect(color.id)}
-                    style={{ backgroundColor: color.color }}
-                  >
-                    <span className="color-name">{color.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Preferred Outfit Style</label>
-              <select name="outfitStyle" value={formData.outfitStyle} onChange={handleInputChange} required>
-                <option value="">Select style</option>
-                <option value="slim">Slim Fit</option>
-                <option value="regular">Regular Fit</option>
-                <option value="loose">Loose Fit</option>
-              </select>
-            </div>
-            <div className="button-group">
-              <button className="back-btn" onClick={() => setStep(2)}>Back</button>
-              <button className="submit-btn" onClick={handleSubmit}>Get Recommendations</button>
-            </div>
-          </div>
-        );
-      case 4:
         return (
           <div className="recommendations">
             {renderBackButton()}
@@ -684,9 +634,7 @@ const AIRecommendation = () => {
                 gender: '',
                 age: '',
                 favoriteSport: '',
-                favoriteColor: '',
                 skinTone: '',
-                outfitStyle: '',
                 skillLevel: '',
                 height: '',
                 climate: '',
